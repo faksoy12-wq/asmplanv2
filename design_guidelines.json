@@ -1,0 +1,160 @@
+{
+  "app_name": "ASM Nöbet Çizelgesi",
+  "personality": "1 iOS-Native Clean",
+  "personality_one_liner": "A highly professional, institutional Turkish administrative dashboard with sharp typography, focused on operational clarity and functional trust.",
+  "color": {
+    "surface": "#FFFFFF",
+    "onSurface": "#111827",
+    "surfaceSecondary": "#F3F4F6",
+    "onSurfaceSecondary": "#4B5563",
+    "surfaceTertiary": "#E5E7EB",
+    "onSurfaceTertiary": "#374151",
+    "surfaceInverse": "#111827",
+    "onSurfaceInverse": "#F9FAFB",
+    "brand": "#111827",
+    "brandPrimary": "#111827",
+    "onBrandPrimary": "#FFFFFF",
+    "brandSecondary": "#F3F4F6",
+    "onBrandSecondary": "#111827",
+    "brandTertiary": "#E5E7EB",
+    "onBrandTertiary": "#111827",
+    "success": "#059669",
+    "onSuccess": "#FFFFFF",
+    "warning": "#D97706",
+    "onWarning": "#FFFFFF",
+    "error": "#DC2626",
+    "onError": "#FFFFFF",
+    "info": "#4B5563",
+    "onInfo": "#FFFFFF",
+    "border": "#E5E7EB",
+    "borderStrong": "#9CA3AF",
+    "divider": "#F3F4F6"
+  },
+  "typography": {
+    "displayFontFamily": "Plus Jakarta Sans",
+    "textFontFamily": "Plus Jakarta Sans",
+    "scale": {
+      "sm": 12,
+      "base": 14,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24
+    }
+  },
+  "spacing": {
+    "rule": "Generous Apple-native padding. Group related scheduling elements closely, but give structural elements breathing room. Sticky CTA over scrolling content is required.",
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "2xl": 32,
+    "3xl": 48
+  },
+  "radius_tokens": {
+    "sm": 6,
+    "md": 12,
+    "lg": 20,
+    "pill": 999
+  },
+  "shadow_tier": 1,
+  "navigation": "bottom_tabs",
+  "icon_set": "Ionicons",
+  "glassmorphism": {
+    "enabled": true,
+    "do's": [
+      "Use glass on the bottom tab bar",
+      "Use glass on sticky month/year selector header",
+      "Use glass on floating 'Şablonu Uygula' button container"
+    ],
+    "dont's": [
+      "No glass on regular calendar day cells",
+      "No glass on form inputs or bottom sheet content"
+    ]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-glass-effect",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    {
+      "name": "Login",
+      "purpose": "Secure PIN gate to access the ASM dashboard.",
+      "states": {
+        "loading": "Subtle loading spinner in place of PIN dots",
+        "empty": "N/A",
+        "error": "Shake animation and red 'Hatalı PIN' text"
+      },
+      "layout": "Full-bleed background image with vertical gradient scrim (transparent to surfaceInverse). Clean numeric keypad (NumPad) at the bottom 40%. Large 'ASM Nöbet Çizelgesi' typography. No decorative graphics, strict institutional feel."
+    },
+    {
+      "name": "CalendarDashboard",
+      "purpose": "Interactive monthly calendar for 2026-2027 highlighting coverage, holidays, and templates.",
+      "states": {
+        "loading": "Skeleton grid of the calendar",
+        "empty": "N/A",
+        "error": "Toast with retry for sync issues"
+      },
+      "layout": "Sticky glass header with left/right arrows for Month/Year switching. Day-of-week header row (Pzt...Paz). 7-column calendar grid. Cells have day number; tap to open Daily Assignment sheet. 'Resmi Tatil' days have a tinted red background and red text. Assigned physicians appear as colored dot tags in the cell. A sticky glass floating CTA 'Şablonu Ay Geneline Uygula' sits above the bottom tab bar. Subtle footer text: 'Yazılım ve Geliştirme: Dr. Furkan Aksoy'."
+    },
+    {
+      "name": "DailyAssignmentSheet",
+      "purpose": "Bottom sheet to assign physicians or mark holidays for a specific day.",
+      "states": {
+        "loading": "Spinner",
+        "empty": "N/A",
+        "error": "Inline error for double-booking warnings"
+      },
+      "layout": "BottomSheet. Header: Date (e.g. 15 Ocak Çarşamba). Prominent switch/toggle: 'Resmi Tatil / İdari İzin (ASM Kapalı)' - toggling this disables physician selection. List of physicians with checkboxes for multiselect. Real-time warning banner if < 2 physicians (or custom threshold) are assigned. Sticky 'Kaydet' button."
+    },
+    {
+      "name": "HekimlerVeSablon",
+      "purpose": "Manage physician list and define the recurring weekly template.",
+      "states": {
+        "loading": "List skeleton",
+        "empty": "Empty state illustration with 'Henüz hekim eklenmedi' and Add button.",
+        "error": "Error fetching data"
+      },
+      "layout": "Two sections or tabs. 1: Hekim Listesi (Add/Edit/Delete, assign color tags like A, B, C). 2: Haftalık Şablon (List of days Pzt-Cum, tap to select which physicians work each day). Minimalistic cards for each physician."
+    },
+    {
+      "name": "AylikOzet",
+      "purpose": "Summary metrics showing fair distribution of shifts.",
+      "states": {
+        "loading": "Skeleton list",
+        "empty": "No data for this month",
+        "error": "Error message"
+      },
+      "layout": "Month selector at top. Vertical list of physicians. Each row shows total working days for the month with a simple progress bar indicating load distribution."
+    }
+  ],
+  "images": {
+    "login_bg": {
+      "url": "https://images.pexels.com/photos/37856948/pexels-photo-37856948.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "alt": "Modern government building with Turkish flag"
+    },
+    "empty_state_calendar": {
+      "url": "https://images.unsplash.com/photo-1578625155481-7bc40a6481b6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MTJ8MHwxfHNlYXJjaHwxfHxDbGVhbiUyMG1vZGVybiUyMG1lZGljYWwlMjBjYWxlbmRhciUyMGFic3RyYWN0fGVufDB8fHx8MTc4Nzc0MzE4OHww&ixlib=rb-4.1.0&q=85",
+      "alt": "Clean minimal calendar"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Strictly follow the color palette: No blues or purples. Base is graphite/near-black, accent/holidays use red (error token).",
+    "Implement Turkish calendar rules: Week starts on Monday (Pzt). All UI text must be in Turkish (Aylık Çalışma Çizelgesi, Hekim Listesi, Resmi Tatil).",
+    "Mark 2026-2027 Turkish Official/Religious holidays automatically with a red indicator (e.g., cell background at 10% opacity of error token + error token text).",
+    "Use a gradient scrim over the login background image (Layer 0: image, Layer 1: linear gradient to surfaceInverse, Layer 2: PIN pad and text).",
+    "Use Plus Jakarta Sans exclusively for a formal, readable, tabular aesthetic.",
+    "Add developer credit 'Yazılım ve Geliştirme: Dr. Furkan Aksoy' subtly on the main dashboard screen.",
+    "Do not use generic emojis anywhere in the app. Rely on Ionicons and color dots for status.",
+    "Ensure the 'Şablonu Ay Geneline Uygula' button is a prominent sticky CTA over the scrolling calendar.",
+    "Implement real-time coverage warnings (Amber/Red) if scheduling conflicts or under-staffing occur in the Daily Assignment sheet."
+  ]
+}
