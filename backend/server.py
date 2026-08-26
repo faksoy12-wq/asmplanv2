@@ -236,7 +236,18 @@ async def root():
     return {"service": "ASM Nöbet Çizelgesi", "ok": True}
 
 
+@api_router.get("/health")
+async def api_health():
+    return {"status": "ok", "service": "asm-nobet-cizelgesi"}
+
+
 app.include_router(api_router)
+
+
+@app.get("/health")
+async def health():
+    return {"status": "ok", "service": "asm-nobet-cizelgesi"}
+
 
 app.add_middleware(
     CORSMiddleware,

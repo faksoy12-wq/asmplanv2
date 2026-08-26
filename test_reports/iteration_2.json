@@ -1,0 +1,37 @@
+{
+  "summary": "Backend-only regression + health endpoint verification for ASM Nöbet Çizelgesi. Both /health (app-level) and /api/health return 200 with {status:'ok', service:'asm-nobet-cizelgesi'}. Ran full pytest suite (22/22 tests passed) covering health, auth PIN flow, physicians CRUD, template GET/PUT, assignments GET/PUT/bulk, holidays GET/PUT, and cascade delete. IMPORTANT DEPLOYMENT NOTE: on the preview environment, the public ingress routes only /api/* to the backend pod; non-/api paths (including /health) are routed to the Expo frontend and return HTML. The app-level /health is therefore only reachable directly on the backend container port (8001), which is how a Kubernetes liveness/readiness probe would hit it. If the deployment agent is probing /health via the public ingress rather than the pod port, /health will still 404 in prod — the deployment probe should target the backend container port or use /api/health.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /health", "issue": "Reachable directly on backend :8001 (returns 200 JSON) but NOT via the public preview ingress, which routes non-/api paths to the Expo frontend and serves HTML with 200. Verify the deployment liveness/readiness probe hits the pod's backend container port (not through ingress), otherwise use /api/health as the probe path."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_asm_backend.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Confirm with the deployment agent that the k8s liveness/readiness probe targets the backend container port (8001) directly, or switch the probe path to /api/health so it flows through the ingress. The app-level /health works locally but ingress rewrites non-/api traffic to the frontend.",
+    "No code changes required in server.py — both health endpoints are correctly implemented and returning 200 JSON."
+  ],
+  "critical_code_review_comments": [
+    "server.py is compact (~270 lines) and clean; models use uuid ids, _id is excluded from all reads, async motor calls throughout, env vars used for MONGO_URL/DB_NAME.",
+    "CORS middleware is added after include_router — order is fine in FastAPI, but conventionally middleware is registered before routers.",
+    "Uses deprecated FastAPI @app.on_event('shutdown') hook; consider migrating to the lifespan context manager (non-blocking)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_asm_backend.py (added /health + /api/health tests; refactored TestAssignments/TestHolidays/TestCascadeDelete to be worker-independent for pytest-xdist loadscope parallelism via a shared _ensure_two_physicians() helper)"
+  ],
+  "success_rate": {"backend": "100% (22/22)", "frontend": "not tested (backend-only request)"},
+  "seed_data_creation": "Reset the DB via mongosh before the run (settings/physicians/assignments/holidays wiped). Tests seed PIN=1234, two TEST_* physicians, template, and Jan-2026 assignments/holidays; final wipe done after successful run.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Test file is pytest-xdist safe (loadscope). If backend PIN is already set, the auth test 'test_a_status_initial_false' will fail — reset via mongosh before running: `mongosh test_database --eval 'db.settings.deleteMany({}); db.physicians.deleteMany({}); db.assignments.deleteMany({}); db.holidays.deleteMany({})'`. Public URL: https://aile-sagligi-takvim.preview.emergentagent.com — remember only /api/* is proxied to backend; /health at app-level is only reachable at http://localhost:8001/health.",
+  "rca_of_issue": "Health endpoints are correctly implemented in FastAPI (server.py L239-241 for /api/health via APIRouter, L247-249 for app-level /health). Verified via localhost:8001 and public /api/health — both return 200 JSON. The original 404 for /health seen by the deployment agent is due to Kubernetes ingress rewriting non-/api requests to the Expo frontend on port 3000 (which historically had no /health route and returned 404). Mitigation: point the deployment probe at the backend container port directly, or use /api/health as the probe URL."
+}

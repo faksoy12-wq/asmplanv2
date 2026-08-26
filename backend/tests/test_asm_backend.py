@@ -21,6 +21,27 @@ def test_health(s):
     assert r.json().get("ok") is True
 
 
+def test_app_health_endpoint(s):
+    """GET /health at the FastAPI app level (used by k8s liveness probes on backend pod).
+    NOTE: the public preview ingress routes only /api/* to backend; non-/api paths hit
+    the Expo frontend. So we probe the backend directly on its internal port.
+    """
+    r = s.get("http://localhost:8001/health")
+    assert r.status_code == 200, f"Expected 200, got {r.status_code}: {r.text}"
+    body = r.json()
+    assert body.get("status") == "ok"
+    assert "service" in body
+
+
+def test_api_health_endpoint(s):
+    """GET /api/health must return 200 {status:'ok'}"""
+    r = s.get(f"{API}/health")
+    assert r.status_code == 200, f"Expected 200, got {r.status_code}: {r.text}"
+    body = r.json()
+    assert body.get("status") == "ok"
+    assert "service" in body
+
+
 # ---------- Auth / PIN ----------
 class TestAuth:
     def test_a_status_initial_false(self, s):
@@ -106,17 +127,31 @@ class TestTemplate:
         assert tpl["3"] == TestPhysicians.created_ids
 
 
+def _ensure_two_physicians(s):
+    """Return at least 2 physician IDs; create if needed (works across xdist workers)."""
+    rows = s.get(f"{API}/physicians").json()
+    ids = [p["id"] for p in rows]
+    while len(ids) < 2:
+        suffix = len(ids)
+        r = s.post(f"{API}/physicians",
+                   json={"name": f"TEST_Aux_{suffix}", "code": f"X{suffix}", "color": "#888888"})
+        ids.append(r.json()["id"])
+    return ids
+
+
 # ---------- Assignments ----------
 class TestAssignments:
     def test_a_put_single(self, s):
+        pids = _ensure_two_physicians(s)
         r = s.put(f"{API}/assignments/2026-01-05",
-                  json={"date": "2026-01-05", "physician_ids": [TestPhysicians.created_ids[0]]})
+                  json={"date": "2026-01-05", "physician_ids": [pids[0]]})
         assert r.status_code == 200
 
     def test_b_bulk(self, s):
+        pids = _ensure_two_physicians(s)
         items = [
-            {"date": "2026-01-06", "physician_ids": [TestPhysicians.created_ids[1]]},
-            {"date": "2026-01-07", "physician_ids": TestPhysicians.created_ids},
+            {"date": "2026-01-06", "physician_ids": [pids[1]]},
+            {"date": "2026-01-07", "physician_ids": pids[:2]},
         ]
         r = s.post(f"{API}/assignments/bulk", json=items)
         assert r.status_code == 200
@@ -133,7 +168,10 @@ class TestAssignments:
 # ---------- Holidays ----------
 class TestHolidays:
     def test_a_mark_holiday_clears_assignment(self, s):
-        # ensure there is an assignment on 2026-01-07
+        # Ensure there is an assignment on 2026-01-07 (create if missing — worker isolation)
+        pids = _ensure_two_physicians(s)
+        s.put(f"{API}/assignments/2026-01-07",
+              json={"date": "2026-01-07", "physician_ids": pids[:2]})
         r0 = s.get(f"{API}/assignments", params={"year": 2026, "month": 1})
         assert any(x["date"] == "2026-01-07" for x in r0.json())
         r = s.put(f"{API}/holidays/2026-01-07", json={"date": "2026-01-07", "is_holiday": True, "label": "İdari İzin"})
@@ -155,10 +193,13 @@ class TestHolidays:
 # ---------- Cascade delete ----------
 class TestCascadeDelete:
     def test_delete_physician_cascades(self, s):
-        pid = TestPhysicians.created_ids[0]
+        pids = _ensure_two_physicians(s)
+        pid = pids[0]
         # Ensure it's in template and an assignment
         s.put(f"{API}/assignments/2026-01-10",
-              json={"date": "2026-01-10", "physician_ids": TestPhysicians.created_ids})
+              json={"date": "2026-01-10", "physician_ids": pids[:2]})
+        # Ensure template contains pid so cascade removal is verifiable
+        s.put(f"{API}/template", json={"template": {"1": [pid], "2": [], "3": [], "4": [], "5": [], "6": [], "7": []}})
         r = s.delete(f"{API}/physicians/{pid}")
         assert r.status_code == 200
         # Not in physicians list
