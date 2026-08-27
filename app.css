@@ -79,7 +79,7 @@ body {
 .splash-screen {
   position: fixed;
   inset: 0;
-  background: radial-gradient(circle at 50% 30%, #1E293B 0%, #0F172A 100%);
+  background: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -120,14 +120,14 @@ body {
 .splash-app-title {
   font-size: 32px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--on-surface);
   letter-spacing: -0.8px;
   margin-bottom: 4px;
 }
 
 .splash-tagline {
   font-size: 14px;
-  color: #94A3B8;
+  color: var(--on-surface-secondary);
   font-weight: 500;
   margin-bottom: 28px;
 }
@@ -136,8 +136,8 @@ body {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--surface-tertiary);
+  border: 1px solid var(--border);
   padding: 8px 18px;
   border-radius: var(--radius-pill);
   backdrop-filter: blur(12px);
@@ -147,7 +147,7 @@ body {
 .dev-label {
   font-size: 9px;
   font-weight: 700;
-  color: #10B981;
+  color: #059669;
   letter-spacing: 1.5px;
   text-transform: uppercase;
 }
@@ -155,7 +155,7 @@ body {
 .dev-name {
   font-size: 13px;
   font-weight: 600;
-  color: #F8FAFC;
+  color: var(--on-surface);
   margin-top: 1px;
 }
 
@@ -341,8 +341,8 @@ body {
 }
 
 @keyframes tabFadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .tab-content.active {
