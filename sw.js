@@ -1,4 +1,4 @@
-const CACHE_NAME = 'asm-plan-v2';
+const CACHE_NAME = 'asm-plan-v3';
 const ASSETS = [
   './',
   './index.html',
