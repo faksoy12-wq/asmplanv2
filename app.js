@@ -336,6 +336,8 @@ function initNav() {
     document.getElementById(`tab-${tab}`).classList.add('active');
     state.activeTab = tab;
 
+    el.applyTemplateBtn.classList.toggle('hidden', tab !== 'calendar');
+
     if (tab === 'calendar') renderCalendar();
     if (tab === 'physicians') renderPhysicians();
     if (tab === 'template') renderTemplate();

@@ -16,16 +16,16 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
-  <link rel="manifest" href="manifest.json?v=6">
-  <link rel="apple-touch-icon" href="icons/icon-192.png?v=6">
-  <link rel="icon" type="image/png" href="icons/icon-192.png?v=6">
+  <link rel="manifest" href="manifest.json?v=7">
+  <link rel="apple-touch-icon" href="icons/icon-192.png?v=7">
+  <link rel="icon" type="image/png" href="icons/icon-192.png?v=7">
 
   <title>ASM Nöbet Çizelgesi</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=6">
+  <link rel="stylesheet" href="app.css?v=7">
 </head>
 <body>
 
@@ -201,11 +201,6 @@
         </div>
         <div class="calendar-grid" id="calendar-grid"></div>
       </div>
-
-      <button class="fab" id="apply-template-btn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-        <span>Şablonu Uygula</span>
-      </button>
     </div>
 
     <!-- ===== TAB: PHYSICIANS ===== -->
@@ -261,6 +256,12 @@
       <div class="summary-list" id="summary-list"></div>
       <div class="summary-total" id="summary-total"></div>
     </div>
+
+    <!-- ===== FAB (app iskeleti seviyesinde — artık hiçbir sekme .tab-content'inin çocuğu değil, bu yüzden sekme geçiş animasyonları onu bir daha asla etkilemez) ===== -->
+    <button class="fab" id="apply-template-btn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+      <span>Şablonu Uygula</span>
+    </button>
 
     <!-- ===== BOTTOM TAB BAR ===== -->
     <nav class="tab-bar" id="tab-bar">
@@ -352,6 +353,6 @@
   <!-- ========== TOAST NOTIFICATION ========== -->
   <div class="toast hidden" id="toast"></div>
 
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>
