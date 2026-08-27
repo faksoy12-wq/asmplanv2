@@ -808,11 +808,15 @@ function renderAll() {
   renderSummary();
 }
 
-// ================= SERVICE WORKER REGISTRATION =================
+// ================= SERVICE WORKER REGISTRATION & AUTO-UPDATE =================
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then((reg) => console.log('PWA Service Worker registered:', reg.scope))
+    navigator.serviceWorker.register('./sw.js?v=4')
+      .then((reg) => {
+        // Force check for updates every time app opens
+        reg.update();
+        console.log('PWA Service Worker registered:', reg.scope);
+      })
       .catch((err) => console.log('PWA Service Worker failed:', err));
   });
 }
