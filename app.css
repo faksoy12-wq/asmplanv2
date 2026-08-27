@@ -321,8 +321,10 @@ body {
 
 /* ================= APP MAIN & TABS ================= */
 #app-main {
-  overflow: hidden;
-  padding-bottom: calc(70px + var(--safe-bottom));
+  flex: 1;
+  overflow-y: auto;
+  /* Alt menünün yüksekliği kadar içerikten pay bırakır */
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
 }
 
 .tab-content {
@@ -806,17 +808,14 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  max-width: 520px;
-  margin: 0 auto;
-  height: calc(56px + var(--safe-bottom));
-  padding-bottom: var(--safe-bottom);
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-top: 1px solid var(--border);
-  z-index: 50;
+  height: calc(60px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background-color: #ffffff; /* Menü arka plan renginiz */
+  z-index: 1000;
+  
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
 }
 
 .tab-bar-item {
