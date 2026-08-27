@@ -321,9 +321,6 @@ body {
 
 /* ================= APP MAIN & TABS ================= */
 #app-main {
-  height: 100vh;
-  height: 100dvh;
-  height: 100svh;
   overflow: hidden;
   padding-bottom: calc(70px + var(--safe-bottom));
 }
