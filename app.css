@@ -53,20 +53,25 @@
 html {
   height: 100%;
   font-size: 14px;
+  overflow: hidden;
 }
 
 body {
   font-family: var(--font-family);
   background-color: var(--surface-secondary);
   color: var(--on-surface);
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
+  overflow: hidden;
+  overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
   padding-top: var(--safe-top);
   padding-bottom: 0;
+  position: fixed;
+  inset: 0;
+  width: 100%;
 }
 
 /* ================= SPLASH & WELCOME SCREEN ================= */
@@ -313,14 +318,20 @@ body {
 
 /* ================= APP MAIN & TABS ================= */
 #app-main {
+  height: 100dvh;
+  overflow: hidden;
   padding-bottom: calc(70px + var(--safe-bottom));
 }
 
 .tab-content {
   display: none;
   flex: 1;
+  min-height: 0;
   padding: clamp(10px, 3vw, 16px);
   flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
   animation: tabFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -439,6 +450,7 @@ body {
   padding: clamp(8px, 2.2vw, 12px);
   box-shadow: var(--shadow-sm);
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
@@ -462,16 +474,18 @@ body {
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: clamp(4px, 1.2vw, 6px);
+  grid-template-rows: repeat(6, minmax(0, 1fr));
+  gap: clamp(3px, 1vw, 6px);
   flex: 1;
+  min-height: 0;
 }
 
 .calendar-day {
-  min-height: clamp(62px, 14vw, 84px);
+  min-height: 0;
   background: var(--surface-secondary);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: clamp(3px, 1vw, 5px);
+  padding: clamp(2px, 1vw, 5px);
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
