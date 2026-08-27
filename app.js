@@ -108,6 +108,7 @@ const el = {
   nextMonth: document.getElementById('next-month'),
   calendarGrid: document.getElementById('calendar-grid'),
   applyTemplateBtn: document.getElementById('apply-template-btn'),
+  clearMonthBtn: document.getElementById('clear-month-btn'),
   
   physicianList: document.getElementById('physician-list'),
   physicianEmpty: document.getElementById('physician-empty'),
@@ -336,6 +337,29 @@ function initCalendar() {
   };
 
   el.applyTemplateBtn.onclick = applyTemplateToMonth;
+  el.clearMonthBtn.onclick = clearMonthAssignments;
+}
+
+function clearMonthAssignments() {
+  const monthName = TR_MONTHS[state.currentMonth - 1];
+  const confirmMsg = `${monthName} ${state.currentYear} ayının tüm nöbet atamalarını silmek istediğinize emin misiniz?`;
+  
+  if (!confirm(confirmMsg)) return;
+
+  const totalDays = daysInMonth(state.currentYear, state.currentMonth);
+  let clearedCount = 0;
+
+  for (let d = 1; d <= totalDays; d++) {
+    const dateStr = toDateStr(state.currentYear, state.currentMonth, d);
+    if (state.assignments[dateStr]) {
+      delete state.assignments[dateStr];
+      clearedCount++;
+    }
+  }
+
+  Storage.set('assignments', state.assignments);
+  renderCalendar();
+  showToast(`${monthName} ayı nöbetleri sıfırlandı`);
 }
 
 function renderCalendar() {
@@ -356,6 +380,8 @@ function renderCalendar() {
   // Actual days
   for (let d = 1; d <= totalDays; d++) {
     const dateStr = toDateStr(state.currentYear, state.currentMonth, d);
+    const dayOfWeek = ((new Date(state.currentYear, state.currentMonth - 1, d).getDay() + 6) % 7) + 1; // 1=Mon..7=Sun
+    const isWeekendDay = dayOfWeek === 6 || dayOfWeek === 7;
     const hol = isHoliday(dateStr);
     const dayAssigned = state.assignments[dateStr] || [];
     
@@ -363,18 +389,23 @@ function renderCalendar() {
     dayDiv.className = 'calendar-day';
     if (dateStr === todayStr) dayDiv.classList.add('today');
     if (hol.isHoliday) dayDiv.classList.add('holiday');
+    if (isWeekendDay) dayDiv.classList.add('weekend');
 
     let badgesHtml = '';
     if (hol.isHoliday && hol.label) {
       badgesHtml += `<span class="holiday-tag">${hol.label}</span>`;
     }
 
-    dayAssigned.forEach(id => {
-      const p = state.physicians.find(x => x.id === id);
-      if (p) {
-        badgesHtml += `<span class="physician-pill" style="background:${p.color}">${p.code || p.name.slice(0, 2)}</span>`;
-      }
-    });
+    if (isWeekendDay && dayAssigned.length === 0) {
+      badgesHtml += `<span class="weekend-closed-text">Kapalı</span>`;
+    } else {
+      dayAssigned.forEach(id => {
+        const p = state.physicians.find(x => x.id === id);
+        if (p) {
+          badgesHtml += `<span class="physician-pill" style="background:${p.color}">${p.code || p.name.slice(0, 2)}</span>`;
+        }
+      });
+    }
 
     dayDiv.innerHTML = `
       <div class="day-header">
@@ -383,6 +414,7 @@ function renderCalendar() {
       <div class="day-badges">${badgesHtml}</div>
     `;
 
+    // Only allow opening sheet for non-weekend or if user explicitly taps
     dayDiv.onclick = () => openDailySheet(dateStr);
     el.calendarGrid.appendChild(dayDiv);
   }
@@ -490,8 +522,11 @@ function applyTemplateToMonth() {
 
     const [y, m] = [state.currentYear, state.currentMonth];
     const dow = ((new Date(y, m - 1, d).getDay() + 6) % 7) + 1; // 1=Mon..7=Sun
-    const templateIds = state.template[String(dow)] || [];
+    
+    // Skip weekends (Saturday=6, Sunday=7)
+    if (dow === 6 || dow === 7) continue;
 
+    const templateIds = state.template[String(dow)] || [];
     if (templateIds.length > 0) {
       state.assignments[dateStr] = [...templateIds];
       count++;
@@ -500,7 +535,7 @@ function applyTemplateToMonth() {
 
   Storage.set('assignments', state.assignments);
   renderCalendar();
-  showToast(`Şablon uygulandı (${count} gün)`);
+  showToast(`Hafta içi şablon uygulandı (${count} gün)`);
 }
 
 // ================= PHYSICIANS MANAGEMENT =================
@@ -645,8 +680,11 @@ function deletePhysician() {
 function renderTemplate() {
   el.templateDays.innerHTML = '';
 
-  TR_DAYS.forEach((dayName, idx) => {
-    const dow = String(idx + 1); // "1" .. "7"
+  // Only weekdays Monday (0) to Friday (4)
+  const weekdays = TR_DAYS.slice(0, 5);
+
+  weekdays.forEach((dayName, idx) => {
+    const dow = String(idx + 1); // "1" .. "5"
     const selectedIds = state.template[dow] || [];
 
     const dayCard = document.createElement('div');
