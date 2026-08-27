@@ -62,6 +62,7 @@ body {
   color: var(--on-surface);
   height: 100vh;
   height: 100dvh;
+  height: 100svh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -182,8 +183,10 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: clamp(16px, 4vh, 32px) clamp(16px, 6vw, 36px) max(calc(12px + var(--safe-bottom)), 20px);
-  min-height: 100dvh;
-  max-height: 100dvh;
+  min-height: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .pin-header {
@@ -263,8 +266,8 @@ body {
 
 .key-btn {
   aspect-ratio: 1;
-  width: clamp(56px, 17vw, 72px);
-  height: clamp(56px, 17vw, 72px);
+  width: clamp(48px, min(17vw, 8.5dvh), 72px);
+  height: clamp(48px, min(17vw, 8.5dvh), 72px);
   margin: 0 auto;
   border-radius: 50%;
   border: 1px solid var(--border);
@@ -318,7 +321,9 @@ body {
 
 /* ================= APP MAIN & TABS ================= */
 #app-main {
+  height: 100vh;
   height: 100dvh;
+  height: 100svh;
   overflow: hidden;
   padding-bottom: calc(70px + var(--safe-bottom));
 }
@@ -590,7 +595,8 @@ body {
   position: fixed;
   bottom: calc(72px + var(--safe-bottom));
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate3d(-50%, 0, 0);
+  will-change: transform;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -611,7 +617,7 @@ body {
 }
 
 .fab:active {
-  transform: translateX(-50%) scale(0.94);
+  transform: translate3d(-50%, 0, 0) scale(0.94);
   box-shadow: var(--shadow-md);
 }
 
@@ -814,6 +820,8 @@ body {
   -webkit-backdrop-filter: blur(24px);
   border-top: 1px solid var(--border);
   z-index: 50;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .tab-bar-item {
