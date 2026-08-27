@@ -250,18 +250,38 @@ body {
   margin-bottom: 12px;
 }
 
-.header-action-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--brand);
-  color: #fff;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
+.btn-danger-icon {
+  background: var(--surface-secondary) !important;
+  color: var(--on-surface-secondary) !important;
+}
+
+.btn-danger-icon:active {
+  background: #FEE2E2 !important;
+  color: var(--error) !important;
+}
+
+.weekend-col {
+  color: #9CA3AF !important;
+  font-weight: 500;
+}
+
+.calendar-day.weekend {
+  background: #F9FAFB;
+  border-color: #EEF0F2;
+  opacity: 0.75;
+  cursor: default;
+}
+
+.calendar-day.weekend:active {
+  background: #F9FAFB;
+}
+
+.weekend-closed-text {
+  font-size: clamp(7px, 1.9vw, 9px);
+  font-weight: 600;
+  color: #9CA3AF;
+  text-align: center;
+  margin-top: 4px;
 }
 
 /* ================= MONTH NAV ================= */
