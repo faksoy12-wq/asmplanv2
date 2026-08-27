@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+
+  <!-- PWA Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ASM Plan">
+  <meta name="theme-color" content="#111827">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+
+  <title>ASM Nöbet Çizelgesi</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+  <!-- ========== PIN SCREEN ========== -->
+  <div id="pin-screen" class="screen">
+    <div class="pin-container">
+      <div class="pin-header">
+        <div class="pin-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2z"/>
+            <path d="M12 8v4l2 2"/>
+          </svg>
+        </div>
+        <h1 class="pin-title">ASM Nöbet Çizelgesi</h1>
+        <p class="pin-subtitle">Giriş için PIN kodunuzu girin</p>
+      </div>
+
+      <div class="pin-dots" id="pin-dots">
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+      </div>
+
+      <p class="pin-error" id="pin-error"></p>
+
+      <div class="pin-keypad" id="pin-keypad">
+        <button class="key-btn" data-key="1">1</button>
+        <button class="key-btn" data-key="2">2</button>
+        <button class="key-btn" data-key="3">3</button>
+        <button class="key-btn" data-key="4">4</button>
+        <button class="key-btn" data-key="5">5</button>
+        <button class="key-btn" data-key="6">6</button>
+        <button class="key-btn" data-key="7">7</button>
+        <button class="key-btn" data-key="8">8</button>
+        <button class="key-btn" data-key="9">9</button>
+        <button class="key-btn key-empty"></button>
+        <button class="key-btn" data-key="0">0</button>
+        <button class="key-btn key-delete" data-key="delete">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
+            <line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== PIN SETUP SCREEN ========== -->
+  <div id="pin-setup-screen" class="screen hidden">
+    <div class="pin-container">
+      <div class="pin-header">
+        <div class="pin-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <h1 class="pin-title">PIN Oluşturun</h1>
+        <p class="pin-subtitle" id="setup-subtitle">Yeni 4 haneli PIN kodunuzu girin</p>
+      </div>
+
+      <div class="pin-dots" id="setup-dots">
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+      </div>
+
+      <p class="pin-error" id="setup-error"></p>
+
+      <div class="pin-keypad" id="setup-keypad">
+        <button class="key-btn" data-key="1">1</button>
+        <button class="key-btn" data-key="2">2</button>
+        <button class="key-btn" data-key="3">3</button>
+        <button class="key-btn" data-key="4">4</button>
+        <button class="key-btn" data-key="5">5</button>
+        <button class="key-btn" data-key="6">6</button>
+        <button class="key-btn" data-key="7">7</button>
+        <button class="key-btn" data-key="8">8</button>
+        <button class="key-btn" data-key="9">9</button>
+        <button class="key-btn key-empty"></button>
+        <button class="key-btn" data-key="0">0</button>
+        <button class="key-btn key-delete" data-key="delete">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
+            <line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MAIN APP ========== -->
+  <div id="app-main" class="screen hidden">
+
+    <!-- ===== TAB: CALENDAR ===== -->
+    <div id="tab-calendar" class="tab-content active">
+      <header class="tab-header">
+        <h2 class="tab-title">Nöbet Takvimi</h2>
+      </header>
+
+      <div class="month-nav">
+        <button class="month-nav-btn" id="prev-month">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span class="month-label" id="month-label"></span>
+        <button class="month-nav-btn" id="next-month">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <div class="calendar-weekdays">
+        <span>Pt</span><span>Sa</span><span>Ça</span><span>Pe</span><span>Cu</span><span>Ct</span><span>Pz</span>
+      </div>
+      <div class="calendar-grid" id="calendar-grid"></div>
+
+      <button class="fab" id="apply-template-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        <span>Şablonu Uygula</span>
+      </button>
+    </div>
+
+    <!-- ===== TAB: PHYSICIANS ===== -->
+    <div id="tab-physicians" class="tab-content">
+      <header class="tab-header">
+        <h2 class="tab-title">Hekimler</h2>
+        <button class="header-action-btn" id="add-physician-btn">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </header>
+      <div class="physician-list" id="physician-list"></div>
+      <div class="empty-state" id="physician-empty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <p>Henüz hekim eklenmedi</p>
+        <button class="btn-secondary" id="add-first-physician-btn">Hekim Ekle</button>
+      </div>
+    </div>
+
+    <!-- ===== TAB: TEMPLATE ===== -->
+    <div id="tab-template" class="tab-content">
+      <header class="tab-header">
+        <h2 class="tab-title">Haftalık Şablon</h2>
+      </header>
+      <p class="tab-desc">Her gün için varsayılan nöbet hekimlerini belirleyin.</p>
+      <div class="template-days" id="template-days"></div>
+    </div>
+
+    <!-- ===== TAB: SUMMARY ===== -->
+    <div id="tab-summary" class="tab-content">
+      <header class="tab-header">
+        <h2 class="tab-title">Aylık Özet</h2>
+      </header>
+      <div class="summary-month-nav">
+        <button class="month-nav-btn" id="summary-prev">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span class="month-label" id="summary-month-label"></span>
+        <button class="month-nav-btn" id="summary-next">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+      <div class="summary-list" id="summary-list"></div>
+      <div class="summary-total" id="summary-total"></div>
+    </div>
+
+    <!-- ===== BOTTOM TAB BAR ===== -->
+    <nav class="tab-bar" id="tab-bar">
+      <button class="tab-bar-item active" data-tab="calendar">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Takvim</span>
+      </button>
+      <button class="tab-bar-item" data-tab="physicians">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Hekimler</span>
+      </button>
+      <button class="tab-bar-item" data-tab="template">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span>Şablon</span>
+      </button>
+      <button class="tab-bar-item" data-tab="summary">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Özet</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ========== DAILY ASSIGNMENT BOTTOM SHEET ========== -->
+  <div class="sheet-overlay hidden" id="daily-sheet-overlay"></div>
+  <div class="bottom-sheet hidden" id="daily-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <h3 class="sheet-title" id="sheet-date-title"></h3>
+      <button class="sheet-close" id="sheet-close">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body" id="sheet-physician-list"></div>
+    <div class="sheet-actions">
+      <label class="holiday-toggle">
+        <input type="checkbox" id="sheet-holiday-toggle">
+        <span class="toggle-slider"></span>
+        <span class="toggle-label">Tatil / İdari İzin</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- ========== PHYSICIAN MODAL ========== -->
+  <div class="modal-overlay hidden" id="physician-modal-overlay"></div>
+  <div class="modal hidden" id="physician-modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-title">Hekim Ekle</h3>
+      <button class="sheet-close" id="modal-close">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">İsim</label>
+        <input type="text" class="form-input" id="physician-name" placeholder="Dr. Ahmet Yılmaz">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Kısa Kod</label>
+        <input type="text" class="form-input" id="physician-code" placeholder="AY" maxlength="3">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Renk</label>
+        <div class="color-picker" id="color-picker">
+          <button class="color-option" data-color="#3B82F6" style="background:#3B82F6"></button>
+          <button class="color-option" data-color="#10B981" style="background:#10B981"></button>
+          <button class="color-option" data-color="#F59E0B" style="background:#F59E0B"></button>
+          <button class="color-option" data-color="#EF4444" style="background:#EF4444"></button>
+          <button class="color-option" data-color="#8B5CF6" style="background:#8B5CF6"></button>
+          <button class="color-option" data-color="#EC4899" style="background:#EC4899"></button>
+          <button class="color-option" data-color="#06B6D4" style="background:#06B6D4"></button>
+          <button class="color-option" data-color="#F97316" style="background:#F97316"></button>
+          <button class="color-option" data-color="#14B8A6" style="background:#14B8A6"></button>
+          <button class="color-option" data-color="#6366F1" style="background:#6366F1"></button>
+          <button class="color-option" data-color="#84CC16" style="background:#84CC16"></button>
+          <button class="color-option" data-color="#A855F7" style="background:#A855F7"></button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="modal-delete" style="display:none">Sil</button>
+      <button class="btn-primary" id="modal-save">Kaydet</button>
+    </div>
+    <input type="hidden" id="physician-edit-id">
+  </div>
+
+  <!-- ========== TOAST ========== -->
+  <div class="toast hidden" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
