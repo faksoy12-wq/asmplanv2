@@ -1,5 +1,6 @@
 /**
- * ASM Nöbet Çizelgesi PWA - Core Logic
+ * ASM Nöbet Çizelgesi PWA - Core Engine
+ * Geliştirici: Dr. Furkan Aksoy
  */
 
 // ================= CONSTANTS & OFFICIAL HOLIDAYS (TR) =================
@@ -45,7 +46,7 @@ const OFFICIAL_HOLIDAYS = {
   '2027-10-29': 'Cumhuriyet Bayramı'
 };
 
-// ================= STATE & STORAGE =================
+// ================= STORAGE =================
 const Storage = {
   get: (key, def = null) => {
     try {
@@ -65,31 +66,32 @@ const Storage = {
 };
 
 const DEFAULT_PHYSICIANS = [
-  { id: '1', name: 'Dr. Ahmet Yılmaz', code: 'AY', color: '#3B82F6' },
-  { id: '2', name: 'Dr. Fatma Kaya', code: 'FK', color: '#10B981' },
-  { id: '3', name: 'Dr. Mehmet Demir', code: 'MD', color: '#F59E0B' },
-  { id: '4', name: 'Dr. Ayşe Çelik', code: 'AÇ', color: '#8B5CF6' }
+  { id: '1', name: 'Dr. Ahmet Yılmaz', code: 'AY', color: '#059669' },
+  { id: '2', name: 'Dr. Fatma Kaya', code: 'FK', color: '#2563EB' },
+  { id: '3', name: 'Dr. Mehmet Demir', code: 'MD', color: '#D97706' },
+  { id: '4', name: 'Dr. Ayşe Çelik', code: 'AÇ', color: '#7C3AED' }
 ];
 
 const state = {
   pin: Storage.get('pin', null),
   physicians: Storage.get('physicians', DEFAULT_PHYSICIANS),
-  template: Storage.get('template', { '1': ['1'], '2': ['2'], '3': ['3'], '4': ['4'], '5': ['1', '2'] }), // 1=Mon..7=Sun
+  template: Storage.get('template', { '1': ['1'], '2': ['2'], '3': ['3'], '4': ['4'], '5': ['1', '2'] }), // 1=Mon..5=Fri
   assignments: Storage.get('assignments', {}), // 'YYYY-MM-DD': ['id1', 'id2']
-  holidays: Storage.get('holidays', {}), // 'YYYY-MM-DD': { isHoliday: true, label: '' }
+  holidays: Storage.get('holidays', {}),
   currentYear: new Date().getFullYear(),
-  currentMonth: new Date().getMonth() + 1, // 1-12
+  currentMonth: new Date().getMonth() + 1,
   summaryYear: new Date().getFullYear(),
   summaryMonth: new Date().getMonth() + 1,
   activeTab: 'calendar',
   activeSheetDate: null,
   enteredPin: '',
-  setupPinStep: 1, // 1: enter new, 2: confirm
+  setupPinStep: 1,
   tempSetupPin: ''
 };
 
 // ================= DOM ELEMENTS =================
 const el = {
+  splashScreen: document.getElementById('splash-screen'),
   pinScreen: document.getElementById('pin-screen'),
   pinSetupScreen: document.getElementById('pin-setup-screen'),
   appMain: document.getElementById('app-main'),
@@ -112,6 +114,7 @@ const el = {
   
   physicianList: document.getElementById('physician-list'),
   physicianEmpty: document.getElementById('physician-empty'),
+  physicianCountBadge: document.getElementById('physician-count-badge'),
   addPhysicianBtn: document.getElementById('add-physician-btn'),
   addFirstPhysicianBtn: document.getElementById('add-first-physician-btn'),
   
@@ -128,6 +131,7 @@ const el = {
   dailySheetOverlay: document.getElementById('daily-sheet-overlay'),
   dailySheet: document.getElementById('daily-sheet'),
   sheetDateTitle: document.getElementById('sheet-date-title'),
+  sheetDateSubtitle: document.getElementById('sheet-date-subtitle'),
   sheetPhysicianList: document.getElementById('sheet-physician-list'),
   sheetHolidayToggle: document.getElementById('sheet-holiday-toggle'),
   sheetClose: document.getElementById('sheet-close'),
@@ -146,6 +150,13 @@ const el = {
   toast: document.getElementById('toast')
 };
 
+// ================= HAPTIC FEEDBACK =================
+function triggerHaptic() {
+  if ('vibrate' in navigator) {
+    try { navigator.vibrate(10); } catch {}
+  }
+}
+
 // ================= TOAST NOTIFICATION =================
 let toastTimeout = null;
 function showToast(msg) {
@@ -154,7 +165,7 @@ function showToast(msg) {
   el.toast.classList.remove('hidden');
   toastTimeout = setTimeout(() => {
     el.toast.classList.add('hidden');
-  }, 2400);
+  }, 2200);
 }
 
 // ================= HELPERS =================
@@ -167,7 +178,6 @@ function daysInMonth(y, m) {
 }
 
 function firstDayMondayIndex(y, m) {
-  // 0=Mon, 6=Sun
   const day = new Date(y, m - 1, 1).getDay();
   return (day + 6) % 7;
 }
@@ -178,7 +188,18 @@ function isHoliday(dateStr) {
   return { isHoliday: false, label: '' };
 }
 
-// ================= PIN AUTH LOGIC =================
+// ================= SPLASH & AUTH LOGIC =================
+function startAppFlow() {
+  // Show luxury splash animation for 1.3 seconds
+  setTimeout(() => {
+    el.splashScreen.classList.add('fade-out');
+    setTimeout(() => {
+      el.splashScreen.classList.add('hidden');
+      initAuth();
+    }, 450);
+  }, 1300);
+}
+
 function initAuth() {
   if (!state.pin) {
     el.pinScreen.classList.add('hidden');
@@ -212,6 +233,8 @@ function loginPinFlow() {
     const key = btn.dataset.key;
     if (!key) return;
 
+    triggerHaptic();
+
     if (key === 'delete') {
       state.enteredPin = state.enteredPin.slice(0, -1);
     } else if (state.enteredPin.length < 4) {
@@ -233,7 +256,7 @@ function loginPinFlow() {
             updateDots(el.pinDots, 0);
           }, 450);
         }
-      }, 100);
+      }, 80);
     }
   };
 }
@@ -251,6 +274,8 @@ function setupPinFlow() {
     if (!btn) return;
     const key = btn.dataset.key;
     if (!key) return;
+
+    triggerHaptic();
 
     if (key === 'delete') {
       state.enteredPin = state.enteredPin.slice(0, -1);
@@ -302,6 +327,8 @@ function initNav() {
     const tab = item.dataset.tab;
     if (!tab) return;
 
+    triggerHaptic();
+
     document.querySelectorAll('.tab-bar-item').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
 
@@ -319,6 +346,7 @@ function initNav() {
 // ================= CALENDAR TAB =================
 function initCalendar() {
   el.prevMonth.onclick = () => {
+    triggerHaptic();
     state.currentMonth--;
     if (state.currentMonth < 1) {
       state.currentMonth = 12;
@@ -328,6 +356,7 @@ function initCalendar() {
   };
 
   el.nextMonth.onclick = () => {
+    triggerHaptic();
     state.currentMonth++;
     if (state.currentMonth > 12) {
       state.currentMonth = 1;
@@ -341,6 +370,7 @@ function initCalendar() {
 }
 
 function clearMonthAssignments() {
+  triggerHaptic();
   const monthName = TR_MONTHS[state.currentMonth - 1];
   const confirmMsg = `${monthName} ${state.currentYear} ayının tüm nöbet atamalarını silmek istediğinize emin misiniz?`;
   
@@ -414,8 +444,10 @@ function renderCalendar() {
       <div class="day-badges">${badgesHtml}</div>
     `;
 
-    // Only allow opening sheet for non-weekend or if user explicitly taps
-    dayDiv.onclick = () => openDailySheet(dateStr);
+    dayDiv.onclick = () => {
+      triggerHaptic();
+      openDailySheet(dateStr);
+    };
     el.calendarGrid.appendChild(dayDiv);
   }
 }
@@ -424,9 +456,10 @@ function renderCalendar() {
 function openDailySheet(dateStr) {
   state.activeSheetDate = dateStr;
   const [y, m, d] = dateStr.split('-').map(Number);
-  const dayName = TR_DAYS[firstDayMondayIndex(y, m) + (d - 1) % 7];
+  const dayName = TR_DAYS[((new Date(y, m - 1, d).getDay() + 6) % 7)];
   
   el.sheetDateTitle.textContent = `${d} ${TR_MONTHS[m - 1]} ${y}`;
+  el.sheetDateSubtitle.textContent = `${dayName} Günü Nöbetçileri`;
   
   const hol = isHoliday(dateStr);
   el.sheetHolidayToggle.checked = hol.isHoliday;
@@ -444,7 +477,7 @@ function renderSheetPhysicians() {
   el.sheetPhysicianList.innerHTML = '';
   
   if (state.physicians.length === 0) {
-    el.sheetPhysicianList.innerHTML = '<p style="color:var(--on-surface-secondary);text-align:center;padding:12px;">Kayıtlı hekim bulunamadı.</p>';
+    el.sheetPhysicianList.innerHTML = '<p style="color:var(--on-surface-secondary);text-align:center;padding:16px;">Kayıtlı hekim bulunamadı.</p>';
     return;
   }
 
@@ -461,7 +494,10 @@ function renderSheetPhysicians() {
         ${isAssigned ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
       </div>
     `;
-    item.onclick = () => togglePhysicianAssignment(p.id);
+    item.onclick = () => {
+      triggerHaptic();
+      togglePhysicianAssignment(p.id);
+    };
     el.sheetPhysicianList.appendChild(item);
   });
 }
@@ -498,6 +534,7 @@ function initDailySheet() {
   el.dailySheetOverlay.onclick = closeDailySheet;
 
   el.sheetHolidayToggle.onchange = (e) => {
+    triggerHaptic();
     const dateStr = state.activeSheetDate;
     if (!dateStr) return;
     
@@ -513,6 +550,7 @@ function initDailySheet() {
 
 // ================= APPLY TEMPLATE =================
 function applyTemplateToMonth() {
+  triggerHaptic();
   const totalDays = daysInMonth(state.currentYear, state.currentMonth);
   let count = 0;
 
@@ -539,7 +577,7 @@ function applyTemplateToMonth() {
 }
 
 // ================= PHYSICIANS MANAGEMENT =================
-let selectedColor = '#3B82F6';
+let selectedColor = '#059669';
 
 function initPhysicians() {
   el.addPhysicianBtn.onclick = () => openPhysicianModal();
@@ -547,10 +585,10 @@ function initPhysicians() {
   el.modalClose.onclick = closePhysicianModal;
   el.physicianModalOverlay.onclick = closePhysicianModal;
 
-  // Color picker selection
   el.colorPicker.onclick = (e) => {
     const btn = e.target.closest('.color-option');
     if (!btn) return;
+    triggerHaptic();
     el.colorPicker.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
     selectedColor = btn.dataset.color;
@@ -562,6 +600,8 @@ function initPhysicians() {
 
 function renderPhysicians() {
   el.physicianList.innerHTML = '';
+  el.physicianCountBadge.textContent = `${state.physicians.length} Hekim`;
+
   if (state.physicians.length === 0) {
     el.physicianEmpty.classList.remove('hidden');
     return;
@@ -576,17 +616,21 @@ function renderPhysicians() {
         <div class="physician-badge-circle" style="background:${p.color}">${p.code || p.name.slice(0, 2)}</div>
         <div>
           <div class="physician-card-name">${p.name}</div>
-          <div class="physician-card-code">Kod: ${p.code}</div>
+          <div class="physician-card-code">Etiket Kodu: ${p.code}</div>
         </div>
       </div>
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
     `;
-    card.onclick = () => openPhysicianModal(p);
+    card.onclick = () => {
+      triggerHaptic();
+      openPhysicianModal(p);
+    };
     el.physicianList.appendChild(card);
   });
 }
 
 function openPhysicianModal(physician = null) {
+  triggerHaptic();
   if (physician) {
     el.modalTitle.textContent = 'Hekimi Düzenle';
     el.physicianNameInput.value = physician.name;
@@ -599,11 +643,10 @@ function openPhysicianModal(physician = null) {
     el.physicianNameInput.value = '';
     el.physicianCodeInput.value = '';
     el.physicianEditId.value = '';
-    selectedColor = '#3B82F6';
+    selectedColor = '#059669';
     el.modalDelete.style.display = 'none';
   }
 
-  // Update color picker selection
   el.colorPicker.querySelectorAll('.color-option').forEach(b => {
     if (b.dataset.color === selectedColor) b.classList.add('selected');
     else b.classList.remove('selected');
@@ -619,6 +662,7 @@ function closePhysicianModal() {
 }
 
 function savePhysician() {
+  triggerHaptic();
   const name = el.physicianNameInput.value.trim();
   const code = el.physicianCodeInput.value.trim().toUpperCase();
   const id = el.physicianEditId.value;
@@ -629,13 +673,11 @@ function savePhysician() {
   }
 
   if (id) {
-    // Update
     const idx = state.physicians.findIndex(p => p.id === id);
     if (idx !== -1) {
       state.physicians[idx] = { ...state.physicians[idx], name, code: code || name.slice(0, 2), color: selectedColor };
     }
   } else {
-    // Create
     const newPhysician = {
       id: Date.now().toString(),
       name,
@@ -653,12 +695,12 @@ function savePhysician() {
 }
 
 function deletePhysician() {
+  triggerHaptic();
   const id = el.physicianEditId.value;
   if (!id) return;
 
   state.physicians = state.physicians.filter(p => p.id !== id);
   
-  // Clean assignments and template
   Object.keys(state.assignments).forEach(date => {
     state.assignments[date] = state.assignments[date].filter(pid => pid !== id);
   });
@@ -679,12 +721,10 @@ function deletePhysician() {
 // ================= TEMPLATE TAB =================
 function renderTemplate() {
   el.templateDays.innerHTML = '';
-
-  // Only weekdays Monday (0) to Friday (4)
   const weekdays = TR_DAYS.slice(0, 5);
 
   weekdays.forEach((dayName, idx) => {
-    const dow = String(idx + 1); // "1" .. "5"
+    const dow = String(idx + 1);
     const selectedIds = state.template[dow] || [];
 
     const dayCard = document.createElement('div');
@@ -719,6 +759,7 @@ function renderTemplate() {
     const chip = e.target.closest('.template-chip');
     if (!chip) return;
 
+    triggerHaptic();
     const dow = chip.dataset.dow;
     const pid = chip.dataset.pid;
     let list = state.template[dow] || [];
@@ -738,6 +779,7 @@ function renderTemplate() {
 // ================= SUMMARY TAB =================
 function initSummary() {
   el.summaryPrev.onclick = () => {
+    triggerHaptic();
     state.summaryMonth--;
     if (state.summaryMonth < 1) {
       state.summaryMonth = 12;
@@ -747,6 +789,7 @@ function initSummary() {
   };
 
   el.summaryNext.onclick = () => {
+    triggerHaptic();
     state.summaryMonth++;
     if (state.summaryMonth > 12) {
       state.summaryMonth = 1;
@@ -778,7 +821,7 @@ function renderSummary() {
   }
 
   if (state.physicians.length === 0) {
-    el.summaryList.innerHTML = '<p style="color:var(--on-surface-secondary);text-align:center;padding:20px;">Kayıtlı hekim yok.</p>';
+    el.summaryList.innerHTML = '<p style="color:var(--on-surface-secondary);text-align:center;padding:24px;">Kayıtlı hekim yok.</p>';
     el.summaryTotal.textContent = 'Toplam Nöbet: 0';
     return;
   }
@@ -811,9 +854,8 @@ function renderAll() {
 // ================= SERVICE WORKER REGISTRATION & AUTO-UPDATE =================
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=4')
+    navigator.serviceWorker.register('./sw.js?v=5')
       .then((reg) => {
-        // Force check for updates every time app opens
         reg.update();
         console.log('PWA Service Worker registered:', reg.scope);
       })
@@ -823,7 +865,7 @@ if ('serviceWorker' in navigator) {
 
 // ================= INITIALIZATION =================
 document.addEventListener('DOMContentLoaded', () => {
-  initAuth();
+  startAppFlow();
   initNav();
   initCalendar();
   initDailySheet();
