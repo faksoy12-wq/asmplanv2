@@ -1,24 +1,24 @@
-const CACHE_NAME = 'asm-plan-v3';
+const CACHE_NAME = 'asm-plan-v4';
 const ASSETS = [
   './',
   './index.html',
-  './app.css',
-  './app.js',
-  './manifest.json',
+  './app.css?v=4',
+  './app.js?v=4',
+  './manifest.json?v=4',
   './icons/icon-192.png',
   './icons/icon-512.png',
   'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap'
 ];
 
-// Install — cache all static assets
+// Install — cache fresh assets immediately
 self.addEventListener('install', (e) => {
+  self.skipWaiting();
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
-  self.skipWaiting();
 });
 
-// Activate — clean old caches
+// Activate — immediately delete all old caches
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) =>
@@ -28,24 +28,28 @@ self.addEventListener('activate', (e) => {
   self.clients.claim();
 });
 
-// Fetch — cache-first, fallback to network
+// Fetch — NETWORK FIRST, fallback to cache for offline
 self.addEventListener('fetch', (e) => {
+  // Only handle GET requests
+  if (e.request.method !== 'GET') return;
+
   e.respondWith(
-    caches.match(e.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(e.request).then((response) => {
-        // Cache successful GET responses
-        if (e.request.method === 'GET' && response.status === 200) {
-          const clone = response.clone();
+    fetch(e.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const clone = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
         }
-        return response;
-      });
-    }).catch(() => {
-      // Offline fallback for navigation
-      if (e.request.mode === 'navigate') {
-        return caches.match('./index.html');
-      }
-    })
+        return networkResponse;
+      })
+      .catch(() => {
+        // When offline, serve from cache
+        return caches.match(e.request).then((cached) => {
+          if (cached) return cached;
+          if (e.request.mode === 'navigate') {
+            return caches.match('./index.html');
+          }
+        });
+      })
   );
 });
