@@ -60,9 +60,6 @@ body {
   font-family: var(--font-family);
   background-color: var(--surface-secondary);
   color: var(--on-surface);
-  height: 100vh;
-  height: 100dvh;
-  height: 100svh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
