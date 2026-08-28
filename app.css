@@ -176,6 +176,7 @@ body {
   position: fixed;
   inset: 0;
   overflow: hidden;
+  padding-top: var(--safe-top);
 }
 
 .pin-container {
