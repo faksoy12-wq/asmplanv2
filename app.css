@@ -171,6 +171,13 @@ body {
 }
 
 /* ================= PIN SCREEN ================= */
+#pin-screen,
+#pin-setup-screen {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
 .pin-container {
   flex: 1;
   display: flex;
