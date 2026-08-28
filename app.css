@@ -53,7 +53,6 @@
 html {
   height: 100%;
   font-size: 14px;
-  overflow: hidden;
   background-color: var(--surface-secondary);
 }
 
@@ -63,14 +62,12 @@ body {
   color: var(--on-surface);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  overscroll-behavior: none;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
   -webkit-font-smoothing: antialiased;
   padding-top: var(--safe-top);
   padding-bottom: 0;
-  position: fixed;
-  inset: 0;
-  width: 100%;
 }
 
 /* ================= SPLASH & WELCOME SCREEN ================= */
@@ -319,19 +316,14 @@ body {
 
 /* ================= APP MAIN & TABS ================= */
 #app-main {
-  overflow: hidden;
   padding-bottom: calc(70px + var(--safe-bottom));
 }
 
 .tab-content {
   display: none;
   flex: 1;
-  min-height: 0;
   padding: clamp(10px, 3vw, 16px);
   flex-direction: column;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
   animation: tabFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
