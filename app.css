@@ -48,6 +48,7 @@
   padding: 0;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  touch-action: manipulation;
 }
 
 html {
@@ -65,6 +66,7 @@ body {
   min-height: 100dvh;
   overflow-x: hidden;
   overscroll-behavior-y: none;
+  touch-action: none;
   -webkit-font-smoothing: antialiased;
   padding-top: var(--safe-top);
   padding-bottom: 0;
