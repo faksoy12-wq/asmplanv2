@@ -317,6 +317,18 @@ function unlockApp() {
   el.pinSetupScreen.classList.add('hidden');
   el.appMain.classList.remove('hidden');
   renderAll();
+  forceViewportRecalc();
+}
+
+// iOS Safari/standalone: position:fixed elemanlar ilk boyamada bazen yanlış
+// viewport yüksekliğiyle hesaplanıyor ve gerçek konumuna ancak bir kaydırma
+// olayından sonra "oturuyor". Görünmez, anlık bir sahte kaydırma tetikleyerek
+// tarayıcıyı konumu hemen doğru hesaplamaya zorluyoruz.
+function forceViewportRecalc() {
+  requestAnimationFrame(() => {
+    window.scrollTo(0, 1);
+    requestAnimationFrame(() => window.scrollTo(0, 0));
+  });
 }
 
 // ================= NAVIGATION =================
