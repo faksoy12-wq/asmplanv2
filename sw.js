@@ -1,12 +1,12 @@
-const CACHE_NAME = 'asm-plan-v8';
+const CACHE_NAME = 'asm-plan-v9';
 const ASSETS = [
   './',
   './index.html',
-  './app.css?v=8',
-  './app.js?v=8',
-  './manifest.json?v=8',
-  './icons/icon-192.png?v=8',
-  './icons/icon-512.png?v=8',
+  './app.css?v=9',
+  './app.js?v=9',
+  './manifest.json?v=9',
+  './icons/icon-192.png?v=9',
+  './icons/icon-512.png?v=9',
   'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'
 ];
 
