@@ -65,8 +65,9 @@ body {
   flex-direction: column;
   min-height: 100dvh;
   overflow-x: hidden;
+  overflow-y: auto;
   overscroll-behavior-y: none;
-  touch-action: none;
+  touch-action: pan-y;
   -webkit-font-smoothing: antialiased;
   padding-top: var(--safe-top);
   padding-bottom: 0;
