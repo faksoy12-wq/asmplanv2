@@ -322,13 +322,16 @@ function unlockApp() {
 
 // iOS Safari/standalone: position:fixed elemanlar ilk boyamada bazen yanlış
 // viewport yüksekliğiyle hesaplanıyor ve gerçek konumuna ancak bir kaydırma
-// olayından sonra "oturuyor". Görünmez, anlık bir sahte kaydırma tetikleyerek
-// tarayıcıyı konumu hemen doğru hesaplamaya zorluyoruz.
+// olayından sonra (hatta içerik/safe-area tamamen "oturduktan" biraz sonra)
+// "yerleşiyor". Tek seferlik deneme bu pencereyi kaçırabildiği için, görünmez
+// sahte kaydırmayı birkaç kez, artan gecikmelerle tekrarlıyoruz.
 function forceViewportRecalc() {
-  requestAnimationFrame(() => {
+  const nudge = () => {
     window.scrollTo(0, 1);
     requestAnimationFrame(() => window.scrollTo(0, 0));
-  });
+  };
+  requestAnimationFrame(nudge);
+  [50, 150, 350, 600, 1000].forEach(delay => setTimeout(nudge, delay));
 }
 
 // ================= NAVIGATION =================
