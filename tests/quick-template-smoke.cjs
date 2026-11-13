@@ -61,10 +61,12 @@ assert.equal(tpl.dateRoles('2026-11-02').a,'Sekonder');
 tpl.setRole('Primer');
 tpl.toggleDate('2026-11-02','a');
 assert.equal(tpl.dateRoles('2026-11-02').a,'Primer');
-// Last-action undo restores a removed selection.
+// Undo restores the role before the last tap without deleting another physician.
 tpl.undoChange();
-assert.deepEqual([...tpl.dateIds('2026-11-02')],['a']);
-tpl.toggleDate('2026-11-02','b');
+assert.equal(tpl.dateRoles('2026-11-02').a,'Sekonder');
+assert.ok(tpl.dateIds('2026-11-02').includes('b'));
+tpl.toggleDate('2026-11-02','a');
+assert.equal(tpl.dateRoles('2026-11-02').a,'Primer');
 // Tap an auto mobile day removes it just for that date, and undo restores it.
 tpl.setRole('Mobil görev');
 tpl.toggleDate('2026-11-03','c');
