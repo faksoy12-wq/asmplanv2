@@ -185,26 +185,34 @@
     }).join('');
     node.scrollLeft=scrollLeft;node.scrollTop=scrollTop;
   }
-  function dayCell(date,d,offset){
-    const ids=dateIds(date);
+  function dayCell(date,d){
+    const roles=dateRoles(date);
     const who=person();
-    const current=who&&ids.includes(who.id);
-    const dow=v2Dow(date),hol=isHoliday(date);
-    const weekend=dow>5;
+    const currentRole=who?roles[who.id]:null;
+    const current=Boolean(currentRole===quick.selectedRole);
+    const assigned=Boolean(currentRole);
+    const dow=v2Dow(date),hol=isHoliday(date),weekend=dow>5;
+    const ids=dateIds(date).sort((a,b)=>{
+      const r=(ROLE_ORDER[roles[a]]??9)-(ROLE_ORDER[roles[b]]??9);
+      return r || docs().findIndex(p=>p.id===a)-docs().findIndex(p=>p.id===b);
+    });
     const chips=ids.slice(0,3).map(id=>{
-      const p=docs().find(x=>x.id===id);
+      const p=docs().find(x=>x.id===id),role=roles[id];
       if(!p)return '';
-      return '<span class="qtpl-day-chip'+(id===who?.id?' is-selected':'')+'" style="background:'+safeColor(p.color)+'">'+
-        v2Esc(p.code||p.name.slice(0,2))+(isAutomatic(date,id)?'<span class="qtpl-mobile-letter">M</span>':'')+'</span>';
+      return '<span class="qtpl-day-chip'+(id===who?.id?' is-selected':'')+(role==='İzinli / Off day'?' is-off':'')+
+        '" style="background:'+safeColor(p.color)+'" title="'+v2Esc(p.name+' · '+role)+'">'+
+        v2Esc(p.code||p.name.slice(0,2))+' <span class="qtpl-role-letter">'+v2Esc(roleLabel(role))+'</span></span>';
     }).join('');
     const rest=ids.length>3?'<span class="qtpl-more">+'+(ids.length-3)+'</span>':'';
     const stateText=hol.isHoliday?'Tatil':weekend?'Kapalı':'';
     const label=d+' '+TR_MONTHS[state.currentMonth-1]+' '+state.currentYear+
-      (who?', '+who.name+' için '+(current?'seçili':'seçilmedi'):'');
-    return '<button type="button" class="qtpl-day'+(weekend?' is-weekend':'')+(hol.isHoliday?' is-holiday':'')+(current?' has-current':'')+
+      (who?', '+who.name+' · '+(assigned?currentRole:'Atanmamış')+'. Seçilecek: '+quick.selectedRole:'');
+    return '<button type="button" class="qtpl-day'+(weekend?' is-weekend':'')+(hol.isHoliday?' is-holiday':'')+
+      (current?' has-current':assigned?' has-other':'')+
       '" data-tpl-date="'+date+'" aria-label="'+v2Esc(label)+'" aria-pressed="'+Boolean(current)+'"'+
       (who?'':' disabled')+'>'+
-      '<span class="qtpl-day-head"><b>'+d+'</b>'+(current?'<span class="qtpl-tick" aria-hidden="true">✓</span>':'')+'</span>'+
+      '<span class="qtpl-day-head"><b>'+d+'</b>'+(current?'<span class="qtpl-tick" aria-hidden="true">✓</span>':
+        assigned?'<span class="qtpl-other-mark" aria-hidden="true">•</span>':'')+'</span>'+
       '<span class="qtpl-day-chips">'+chips+rest+'</span>'+
       (stateText?'<span class="qtpl-closed-label">'+stateText+'</span>':'')+
       '</button>';
@@ -217,21 +225,36 @@
     const leading=Array.from({length:before},()=>'<div class="qtpl-placeholder" aria-hidden="true"></div>').join('');
     const cells=Array.from({length:days},(_,i)=>{
       const d=i+1;
-      return dayCell(toDateStr(state.currentYear,state.currentMonth,d),d,before);
+      return dayCell(toDateStr(state.currentYear,state.currentMonth,d),d);
     }).join('');
     node.innerHTML=leading+cells;
     const gridRows=Math.ceil((before+days)/7);
     node.style.setProperty('--qtpl-rows',gridRows);
   }
+  function roleSelector(){
+    const node=document.getElementById('qtpl-roles');if(!node)return;
+    if(!allowedRole(quick.selectedRole))quick.selectedRole='Primer';
+    node.innerHTML=ROLES.map(role=>{
+      const active=role.name===quick.selectedRole;
+      return '<button type="button" class="qtpl-role-choice'+(active?' is-active':'')+
+        '" data-tpl-role="'+v2Esc(role.name)+'" aria-pressed="'+active+'">'+
+        '<span class="qtpl-role-symbol" style="background:'+role.color+'">'+role.short+'</span>'+
+        '<span>'+v2Esc(role.name)+'</span>'+(active?'<span class="qtpl-role-check">✓</span>':'')+'</button>';
+    }).join('');
+  }
   function updateStats(){
-    const selected=person(),total=monthPlan().length;
+    const selected=person(),plan=monthPlan(),total=plan.length;
+    const selectedTotal=selected?plan.filter(day=>day.roles[selected.id]===quick.selectedRole).length:0;
     const node=document.getElementById('qtpl-stats');
-    if(node)node.textContent=total+' planlı gün'+(selected?' · '+monthPlan().filter(day=>day.ids.includes(selected.id)).length+' gün '+selected.name:'');
+    if(node)node.textContent=total+' planlı gün'+(selected?
+      ' · '+selected.name+': '+selectedTotal+' '+quick.selectedRole+' günü':'');
+    const fill=document.getElementById('qtpl-fill');
+    if(fill)fill.textContent='Hafta içlerini '+quick.selectedRole+' yap';
     const undo=document.getElementById('qtpl-undo');
     if(undo)undo.hidden=!quick.undo;
   }
   function updateAll(){
-    physicianSelector();renderDays();updateStats();
+    physicianSelector();roleSelector();renderDays();updateStats();
   }
   function switchMonth(delta){
     state.currentMonth+=delta;
@@ -254,7 +277,7 @@
       '<section class="qtpl-main" aria-label="Aylık hızlı şablon takvimi">'+
         '<div class="qtpl-month-bar">'+
           '<button type="button" class="qtpl-month-btn" id="qtpl-prev" aria-label="Önceki ay">‹</button>'+
-          '<div class="qtpl-month-title"><strong>'+TR_MONTHS[state.currentMonth-1]+' '+state.currentYear+'</strong><span>Hızlı hekim yerleştirme</span></div>'+
+          '<div class="qtpl-month-title"><strong>'+TR_MONTHS[state.currentMonth-1]+' '+state.currentYear+'</strong><span>Hekim ve görev seçerek işaretle</span></div>'+
           '<button type="button" class="qtpl-month-btn" id="qtpl-next" aria-label="Sonraki ay">›</button>'+
         '</div>'+
         '<div class="qtpl-weekdays">'+TR_DAYS.map((d,i)=>'<span'+(i>4?' class="qtpl-weekend"':'')+'>'+v2Esc(d.slice(0,2))+'</span>').join('')+'</div>'+
@@ -266,10 +289,12 @@
       '<aside class="qtpl-sidebar" aria-label="Hekim seçimi">'+
         '<div class="qtpl-side-heading"><strong>Hekimi seç</strong><span>Ardından takvimde günlere dokun</span></div>'+
         '<div class="qtpl-physicians" id="qtpl-physicians"></div>'+
+        '<div class="qtpl-role-heading"><strong>Görevi seç</strong><span>Dokunduğun günlere bu görev yazılır</span></div>'+
+        '<div class="qtpl-roles" id="qtpl-roles" role="group" aria-label="Görev seç"></div>'+
         '<div class="qtpl-quick-actions"><button type="button" id="qtpl-fill">Hafta içlerini seç</button>'+
           '<button type="button" id="qtpl-clear">Gün seçimlerini temizle</button>'+
           '<button type="button" id="qtpl-undo" hidden>↶ Geri al</button></div>'+
-        '<p class="qtpl-help"><b>M</b> işareti, hekimin kayıtlı mobil gününü gösterir. Şablonda sadece gün seçersin; Primer, Sekonder ve izin detaylarını ana takvimde düzenlersin.</p>'+
+        '<p class="qtpl-help">Önce <b>hekim</b> ve <b>görev</b> seç, sonra günlere dokun. Aynı güne farklı bir görevle dokunursan görev değişir. Kaydedilmiş mobil günler otomatik eklenir; istersen üzerlerine başka görev yazabilirsin.</p>'+
       '</aside>'+
     '</div>';
     target.querySelector('#qtpl-prev').onclick=()=>switchMonth(-1);
@@ -279,6 +304,13 @@
       if(!button)return;
       quick.selectedId=button.dataset.tplPerson;triggerHaptic();
       updateAll();
+    };
+    target.querySelector('#qtpl-roles').onclick=e=>{
+      const button=e.target.closest('[data-tpl-role]');if(!button)return;
+      const role=button.dataset.tplRole;if(!allowedRole(role))return;
+      quick.selectedRole=role;
+      Storage.set('quickTemplateCurrentRole',role);
+      triggerHaptic();updateAll();
     };
     target.querySelector('#qtpl-grid').onclick=e=>{
       const button=e.target.closest('[data-tpl-date]');
@@ -297,8 +329,10 @@
   renderTemplate=displayTemplate;
   applyTemplateToMonth=applyPlan;
   window.asmQuickTemplate={
-    toggleDate, dateIds, monthPlan, applyPlan, bulk, undoChange,
-    getDraft:()=>({days:clone(quick.days),mobileExcluded:clone(quick.mobileExcluded)}),
+    toggleDate, dateIds, dateRoles, monthPlan, applyPlan, bulk, undoChange,
+    getDraft:()=>({days:clone(quick.days),mobileExcluded:clone(quick.mobileExcluded),roles:clone(quick.roles)}),
+    setRole:role=>{if(allowedRole(role)){quick.selectedRole=role;Storage.set('quickTemplateCurrentRole',role);}},
+    getRole:()=>quick.selectedRole,
     setSelected:id=>{if(hasPhysician(id))quick.selectedId=id;},
     getSelected:()=>quick.selectedId
   };
