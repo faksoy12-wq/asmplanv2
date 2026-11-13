@@ -1,7 +1,7 @@
 name: ASMPlan PWA schedule regression
 on:
   push:
-    branches: [feature/asmplan-gorevli-takvim, main]
+    branches: [main, feature/pdf-paylasim-takvim-duzeni]
   pull_request:
   workflow_dispatch:
 permissions:
