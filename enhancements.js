@@ -9,6 +9,7 @@ const v2 = {
 const v2Esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const v2Dow = date => (new Date(date+'T12:00:00').getDay()+6)%7+1;
 const v2Week = date => Math.ceil(Number(date.slice(8))/7);
+const v2WeekKey = (date,dow) => date.slice(0,7)+'-'+v2Week(date)+'-'+dow;
 const v2Role = (date,id) => v2.roles[date]?.[id] || ((state.assignments[date]||[]).includes(id)?'Görevli':'Görev yok');
 const v2Mobile = (date,id) => (v2.mobile[id]||[]).includes(v2Dow(date));
 const v2Color = id => state.physicians.find(p=>p.id===id)?.color || '#64748b';
@@ -96,7 +97,7 @@ const v2OldPhysModal=openPhysicianModal;
 openPhysicianModal=function(p=null){v2OldPhysModal(p);v2MobileEditor(p);};
 function v2MobileEditor(p){
  const node=document.getElementById('v2-mobile-editor');if(!node)return;
- node.innerHTML='<h4>Mobil görev günleri</h4><p class="v2-muted">Bu günlerde hekim otomatik şablon atamasından çıkarılır. İsterseniz günlük görevden elle değiştirebilirsiniz.</p>'+
+ node.innerHTML='<h4>Mobil görev günleri</h4><p class="v2-muted">Bu günler aylık plan oluşturulurken otomatik Mobil görev olarak işaretlenir. Günlük görevden değiştirebilirsiniz.</p>'+
  '<div class="v2-weekdays">'+TR_DAYS.slice(0,5).map((day,i)=>'<label><input type="checkbox" data-mobile-dow="'+(i+1)+'" '+((v2.mobile[p?.id]||[]).includes(i+1)?'checked':'')+'>'+v2Esc(day.slice(0,2))+'</label>').join('')+'</div>';
 }
 const v2OldSavePhys=savePhysician;
@@ -110,26 +111,28 @@ const v2OldTemplate=renderTemplate;
 renderTemplate=function(){
  v2OldTemplate();v2EnsureUI();
  const node=document.getElementById('v2-week-editor');
- node.innerHTML='<h4>Hafta bazlı plan</h4><p class="v2-muted">Haftalık rutin şablonun üzerine yalnızca seçtiğiniz hafta için farklı hekimler belirleyin. Mobil günler otomatik hariç tutulur.</p>'+
+ node.innerHTML='<h4>Hafta bazlı plan</h4><p class="v2-muted">Seçili ayın haftaları için istisna tanımlayın. Mobil görev günleri çizelgede Mobil görev olarak görünür.</p>'+
  '<label class="v2-label">Hafta <select id="v2-week-number">'+[1,2,3,4,5,6].map(i=>'<option value="'+i+'">'+i+'. hafta</option>').join('')+'</select></label>'+
  '<div id="v2-week-chips"></div><button id="v2-week-reset" class="v2-btn">Haftalık istisnayı temizle</button>';
  const select=document.getElementById('v2-week-number');
  const draw=()=>{
   const w=select.value;
+  const monthPrefix=state.currentYear+'-'+String(state.currentMonth).padStart(2,'0');
   document.getElementById('v2-week-chips').innerHTML=TR_DAYS.slice(0,5).map((day,i)=>{
-    const dow=String(i+1),key=w+'-'+dow,ids=v2.weekly[key]??state.template[dow]??[];
+    const dow=String(i+1),key=w+'-'+dow,ids=v2.weekly[monthPrefix+'-'+key]??state.template[dow]??[];
     return '<div class="v2-week-row"><b>'+v2Esc(day)+'</b><div>'+state.physicians.map(p=>'<label class="v2-week-chip"><input type="checkbox" data-wkey="'+key+'" data-pid="'+v2Esc(p.id)+'" '+(ids.includes(p.id)?'checked':'')+'>'+v2Esc(p.code)+'</label>').join('')+'</div></div>';
   }).join('');
   document.querySelectorAll('[data-wkey]').forEach(input=>input.onchange=()=>{
     const key=input.dataset.wkey,[week,dow]=key.split('-');
-    const ids=v2.weekly[key]??[...(state.template[dow]||[])];
-    v2.weekly[key]=input.checked?[...new Set([...ids,input.dataset.pid])]:ids.filter(x=>x!==input.dataset.pid);
+    const scoped=monthPrefix+'-'+key;
+    const ids=v2.weekly[scoped]??[...(state.template[dow]||[])];
+    v2.weekly[scoped]=input.checked?[...new Set([...ids,input.dataset.pid])]:ids.filter(x=>x!==input.dataset.pid);
     v2Save();
   });
  };
  select.onchange=draw;draw();
  document.getElementById('v2-week-reset').onclick=()=>{
-   Object.keys(v2.weekly).filter(k=>k.startsWith(select.value+'-')).forEach(k=>delete v2.weekly[k]);
+   Object.keys(v2.weekly).filter(k=>k.startsWith(state.currentYear+'-'+String(state.currentMonth).padStart(2,'0')+'-'+select.value+'-')).forEach(k=>delete v2.weekly[k]);
    v2Save();draw();showToast('Hafta istisnası temizlendi');
  };
 };
@@ -139,15 +142,18 @@ applyTemplateToMonth=function(){
    const date=toDateStr(y,m,d),dow=v2Dow(date),week=v2Week(date);
    if(dow>5||isHoliday(date).isHoliday)continue;
    if(Object.prototype.hasOwnProperty.call(state.assignments,date))continue;
-   const ids=(v2.weekly[week+'-'+dow]??state.template[String(dow)]??[]).filter(id=>!v2Mobile(date,id));
-   if(ids.length)proposed.push({date,ids});
+   const baseIds=v2.weekly[v2WeekKey(date,dow)]??state.template[String(dow)]??[];
+   const mobileIds=state.physicians.filter(p=>v2Mobile(date,p.id)).map(p=>p.id);
+   const ids=[...new Set([...baseIds,...mobileIds])];
+   if(ids.length)proposed.push({date,ids,mobileIds});
  }
  if(!proposed.length){showToast('Yeni atanacak boş gün bulunamadı');return;}
- if(!confirm(TR_MONTHS[m-1]+' '+y+' için '+proposed.length+' boş güne plan uygulanacak. Mevcut günler korunacak. Devam edilsin mi?'))return;
- proposed.forEach(({date,ids})=>{
+ // No confirmation for additive, non-destructive planning; existing days are preserved.
+ proposed.forEach(({date,ids,mobileIds})=>{
    state.assignments[date]=ids;
    v2.roles[date] ||= {};
-   ids.forEach((id,i)=>{v2.roles[date][id]=i===0?'Primer':i===1?'Sekonder':'Görevli';});
+   let position=0;
+   ids.forEach(id=>{v2.roles[date][id]=mobileIds.includes(id)?'Mobil görev':position++===0?'Primer':position===2?'Sekonder':'Görevli';});
  });
  Storage.set('assignments',state.assignments);v2Save();renderCalendar();showToast(proposed.length+' gün planlandı');
 };
