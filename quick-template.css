@@ -100,3 +100,36 @@
  .qtpl-mobile-letter{font-size:7px}
  .qtpl-person{min-width:136px;flex-basis:136px}
 }
+
+/* v23 · physician + role picker. Phone: two-row palette; iPad: stable side panel. */
+.qtpl-role-heading{display:flex;flex-direction:column;gap:4px;padding-top:4px;border-top:1px solid #e7eef3}
+.qtpl-role-heading strong{font-size:14px;color:#16364b;font-weight:800}
+.qtpl-role-heading span{font-size:11px;color:#8495a7;line-height:1.35}
+.qtpl-roles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.qtpl-role-choice{appearance:none;display:flex;align-items:center;text-align:left;gap:7px;min-width:0;min-height:45px;padding:7px;background:#f7f9fb;border:1.5px solid #e3eaf1;border-radius:11px;color:#42526a;font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation}
+.qtpl-role-choice.is-active{border-color:#0d9488;background:#e9f8f3;color:#0d665b;box-shadow:0 0 0 1px rgba(13,148,136,.13)}
+.qtpl-role-symbol{flex-shrink:0;width:27px;height:27px;display:grid;place-items:center;border-radius:8px;color:#fff;font-size:10px;font-weight:850}
+.qtpl-role-choice>span:nth-child(2){min-width:0;overflow-wrap:break-word}
+.qtpl-role-check{margin-left:auto;color:#0b8b76;font-size:13px}
+.qtpl-day.has-other{border-color:#a7bfdb;background:#f3f7fc}
+.qtpl-other-mark{color:#5279a2;font-size:17px;line-height:10px}
+.qtpl-day-chip.is-off{opacity:.9}
+.qtpl-role-letter{display:inline-block;flex-shrink:0;margin-left:3px;padding:0 2px;border-radius:2px;background:rgba(255,255,255,.27);font-size:8px;font-weight:850;line-height:1.4}
+.qtpl-day-chip.is-selected{outline:1px solid rgba(255,255,255,.95);outline-offset:-1px}
+@media(max-width:699px){
+ .qtpl-role-heading{flex-direction:row;align-items:baseline;gap:7px;justify-content:space-between;flex-wrap:wrap}
+ .qtpl-role-heading span{font-size:10px}
+ .qtpl-roles{gap:7px}
+ .qtpl-role-choice{min-height:42px;padding:6px 8px;font-size:11px}
+}
+@media(min-width:700px){
+ .qtpl-role-choice{min-height:51px}
+ .qtpl-roles{gap:9px}
+ .qtpl-role-heading{padding-top:11px}
+ .qtpl-role-letter{font-size:10px}
+}
+@media(max-width:370px){
+ .qtpl-role-choice{gap:5px;font-size:10px;padding:6px 5px}
+ .qtpl-role-symbol{width:24px;height:24px}
+ .qtpl-role-letter{font-size:7px;padding:0 1px}
+}
