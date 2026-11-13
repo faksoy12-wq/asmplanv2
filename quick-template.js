@@ -177,7 +177,7 @@
     const scrollLeft=node.scrollLeft,scrollTop=node.scrollTop;
     node.innerHTML=docs().map(p=>{
       const active=p.id===selected?.id;
-      const count=monthPlan().filter(day=>day.ids.includes(p.id)).length;
+      const count=monthPlan().filter(day=>Boolean(day.roles[p.id])).length;
       return '<button type="button" class="qtpl-person'+(active?' is-active':'')+'" data-tpl-person="'+v2Esc(p.id)+'" aria-pressed="'+active+'">'+
       '<span class="qtpl-person-mark" style="background:'+safeColor(p.color)+'">'+v2Esc(p.code||p.name.slice(0,2))+'</span>'+
       '<span class="qtpl-person-label"><strong>'+v2Esc(p.name)+'</strong><small>'+count+' gün seçili</small></span>'+
