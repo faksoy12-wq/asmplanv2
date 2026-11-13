@@ -28,3 +28,7 @@
  .v2-detail-row{flex-wrap:wrap}
  .v2-detail-row b{max-width:50%}
 }
+
+.v2-template-month{display:flex;justify-content:center;align-items:center;gap:14px;margin:8px 0 16px}.v2-template-month strong{font-size:13px;min-width:125px;text-align:center}.v2-template-month .v2-btn{font-size:18px;min-width:40px;padding:5px 10px}
+@media(min-width:700px){#app-main.screen{max-width:1080px}.tab-bar{max-width:1080px;height:72px}.bottom-sheet{max-width:680px}.calendar-grid{grid-auto-rows:minmax(95px,auto)}.v2-actions{padding:16px 0}.physician-list,.template-days,.summary-list{max-width:100%}}
+@media(min-width:1000px){.calendar-grid{grid-auto-rows:minmax(120px,auto)}}
