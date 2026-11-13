@@ -1,11 +1,11 @@
-const CACHE_NAME = 'asm-plan-v19';
+const CACHE_NAME = 'asm-plan-v20';
 const ASSETS = [
   './',
   './index.html',
   './app.css?v=18',
   './app.js?v=18',
-  './enhancements.js?v=19',
-  './enhancements.css?v=19',
+  './enhancements.js?v=20',
+  './enhancements.css?v=20',
   './manifest.json?v=18',
   './icons/icon-192.png?v=18',
   './icons/icon-512.png?v=18',
