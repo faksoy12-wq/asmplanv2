@@ -1,4 +1,4 @@
-const CACHE_NAME = 'asm-plan-v22';
+const CACHE_NAME = 'asm-plan-v23';
 const ASSETS = [
   './',
   './index.html',
@@ -6,8 +6,8 @@ const ASSETS = [
   './app.js?v=18',
   './enhancements.js?v=21',
   './pdf-export.js?v=21',
-  './quick-template.js?v=22',
-  './quick-template.css?v=22',
+  './quick-template.js?v=23',
+  './quick-template.css?v=23',
   './enhancements.css?v=21',
   './manifest.json?v=18',
   './icons/icon-192.png?v=18',
