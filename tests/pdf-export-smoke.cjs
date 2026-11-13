@@ -25,6 +25,8 @@ const run=src=>vm.runInContext(src,sandbox);
 run("state.physicians=[{id:'p',name:'Dr Primer',code:'PR',color:'#0c9c88'},{id:'s',name:'Dr Sekonder',code:'SK',color:'#2468b1'},{id:'o',name:'Dr İzinli',code:'OFF',color:'#9333ea'}];state.currentYear=2026;state.currentMonth=11;state.assignments={'2026-11-16':['s','p']};v2.roles={'2026-11-16':{p:'Primer',s:'Sekonder',o:'İzinli / Off day'},'2026-11-23':{p:'Mobil görev'}};");
 const order=run("v2SortDay('2026-11-16',[state.physicians[2],state.physicians[1],state.physicians[0]]).map(e=>e.role).join('|')");
 assert.equal(order,'Primer|Sekonder|İzinli / Off day','role sort does not depend on entry ordering');
+const offLast=run("v2SortDay('2026-11-16',[{id:'missing',name:'Görev yok',code:'-'} ,...state.physicians]).map(e=>e.role).join('|')");
+assert.equal(offLast,'Primer|Sekonder|Görev yok|İzinli / Off day','off-day always appears last including unassigned physicians');
 const pdf=run('window.v2BuildPdf()');
 assert.equal(pdf.type,'application/pdf');
 assert.ok(pdf.size>650,'PDF content is nonempty');
