@@ -34,12 +34,12 @@ run("v2.roles['2026-11-16'].a='İzinli / Off day';applyTemplateToMonth()");
 assert.equal(run("v2.roles['2026-11-16'].a"),'İzinli / Off day');
 // Monthly exceptions do not leak into following month
 run("state.currentMonth=12;applyTemplateToMonth()");
-assert.equal(run("state.assignments['2026-12-07'].join(',')"),'a,b','November override does not affect December');
+assert.equal(run("state.assignments['2026-12-07'].join(',')"),'a,b,c','November override does not affect December; mobile weekday remains active');
 // Clearing one month removes its role labels but leaves other months intact
 run("state.currentMonth=11;clearMonthAssignments()");
 assert.equal(run("state.assignments['2026-11-16']"),undefined);
 assert.equal(run("v2.roles['2026-11-16']"),undefined);
-assert.equal(run("state.assignments['2026-12-07'].join(',')"),'a,b');
+assert.equal(run("state.assignments['2026-12-07'].join(',')"),'a,b,c');
 // Deleting a doctor clears per-doctor mobile settings and week exceptions
 run("el.physicianEditId={value:'c'};v2.weekly['2026-11-2-1']=['b','c'];deletePhysician()");
 assert.equal(run("state.physicians.some(p=>p.id==='c')"),false);
