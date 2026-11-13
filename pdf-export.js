@@ -12,12 +12,7 @@
     {name:'İzinli / Off day',short:'OFF', title:'İZİNLİ / OFF',color:'#7D5AA9'},
     {name:'Görevli',short:'G', title:'DİĞER GÖREV',color:'#64748B'}
   ];
-  const ROLE_PRIORITY=new Map(ROLE_INFO.map((r,i)=>[r.name,i]));
-  function sortedDay(date, people) {
-    return people.map((p,index)=>({p,role:v2Role(date,p.id),index}))
-      .filter(entry=>entry.role!=='Görev yok')
-      .sort((a,b)=>(ROLE_PRIORITY.get(a.role)??99)-(ROLE_PRIORITY.get(b.role)??99)||a.index-b.index);
-  }
+  function sortedDay(date, people) { return v2SortDay(date,people).filter(e=>e.role!=='Görev yok'); }
   window.v2DutyOrder=sortedDay;
   function rect(ctx,x,y,w,h,r,fill,stroke) {
     r=Math.min(r,w/2,h/2);ctx.beginPath();
@@ -81,18 +76,18 @@
       }
       const entries=sortedDay(date,physicians);
       // Priority order stays consistent: Primer, Sekonder, Mobil, other, Off.
-      const visible=entries.length>3?entries.slice(0,2):entries;
+      const visible=entries.length>4?entries.slice(0,3):entries;
       visible.forEach((entry,i)=>{
-        const ry=cy+34+i*20;
+        const ry=cy+(visible.length===4?29:34)+i*(visible.length===4?17:20);
         const role=ROLE_INFO.find(r=>r.name===entry.role);
         const color=entry.p.color||'#64748B';
-        rect(ctx,cx+9,ry,col-18,18,6,color);
+        rect(ctx,cx+9,ry,col-18,visible.length===4?16:18,6,color);
         let name=entry.p.code||entry.p.name||'';
         let text=(role?.short||'G')+'  ·  '+name;
-        fit(ctx,text,cx+18,ry+14,col-34,15,11,'#FFFFFF',700);
+        fit(ctx,text,cx+18,ry+(visible.length===4?12:14),col-34,visible.length===4?13:15,11,'#FFFFFF',700);
       });
-      if(entries.length>3){
-        txt(ctx,'+ '+(entries.length-2)+' görev',cx+10,cy+92,13,SUB,600);
+      if(entries.length>4){
+        txt(ctx,'+ '+(entries.length-3)+' görev',cx+10,cy+93,12,SUB,600);
       }
     }
   }
@@ -116,7 +111,7 @@
     fit(ctx,name,x+22,y+44,w-125,26,17,INK,700);
     rect(ctx,x+w-90,y+18,67,33,11,entry.p.color||TEAL);
     txt(ctx,code,x+w-56,y+41,17,'#FFFFFF',700,'center');
-    const roleGap=Math.min(40,(h-69)/Math.max(1,entry.groups.length));
+    const roleGap=Math.min(h>300?60:40,(h-69)/Math.max(1,entry.groups.length));
     entry.groups.forEach((group,i)=>{
       const baseline=y+87+i*roleGap;
       const active=group.days.length>0;
@@ -125,7 +120,7 @@
       txt(ctx,group.title,x+68,baseline,15,active?INK:'#94A3B8',700);
       txt(ctx,group.days.length+' gün',x+236,baseline,16,active?INK:'#9AA8B7',700);
       if(group.days.length){
-        const dates=group.days.map(n=>String(n).padStart(2,'0')).join(' · ');
+        const dates=group.days.map(n=>String(n).padStart(2,'0')).join(', ');
         // Dynamic font to keep complete day lists; no truncation or ellipsis.
         fit(ctx,dates,x+305,baseline,w-328,17,11,SUB,500);
       } else {
@@ -140,7 +135,7 @@
   function summary(ctx,entries,startY,maxRows){
     const gap=18,cols=entries.length<=2?Math.max(1,entries.length):3;
     const w=(CONTENT-gap*(cols-1))/cols;
-    const cardH=maxRows===1?318:240;
+    const cardH=maxRows===1?420:240;
     for(let i=0;i<entries.length;i++){
       summaryCard(ctx,entries[i],M+(i%cols)*(w+gap),startY+Math.floor(i/cols)*(cardH+gap),w,cardH);
     }
