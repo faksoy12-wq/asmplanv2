@@ -13,12 +13,15 @@ const v2WeekKey = (date,dow) => date.slice(0,7)+'-'+v2Week(date)+'-'+dow;
 const v2Role = (date,id) => v2.roles[date]?.[id] || ((state.assignments[date]||[]).includes(id)?'Görevli':'Görev yok');
 const v2Mobile = (date,id) => (v2.mobile[id]||[]).includes(v2Dow(date));
 const v2Color = id => state.physicians.find(p=>p.id===id)?.color || '#64748b';
+const V2_ROLE_RANK={'Primer':0,'Sekonder':1,'Mobil görev':2,'Görevli':3,'Görev yok':4,'İzinli / Off day':5};
+const v2SortDay=(date,physicians)=>physicians.map((p,index)=>({p,role:v2Role(date,p.id),index}))
+ .sort((a,b)=>(V2_ROLE_RANK[a.role]??9)-(V2_ROLE_RANK[b.role]??9)||a.index-b.index);
 function v2Save(){ Storage.set('dailyRoles',v2.roles);Storage.set('mobileDays',v2.mobile);Storage.set('weeklyOverrides',v2.weekly); }
 function v2EnsureUI(){
  const cal=document.getElementById('calendar-grid');
  if(!document.getElementById('v2-calendar-actions')){
    const a=document.createElement('div');a.id='v2-calendar-actions';a.className='v2-actions';
-   a.innerHTML='<label class="v2-label">Hekim görünümü <select id="v2-filter"><option value="">Tüm hekimler</option></select></label><button id="v2-pdf" class="v2-btn">PDF / Yazdır</button>';
+   a.innerHTML='<label class="v2-label">Hekim görünümü <select id="v2-filter"><option value="">Tüm hekimler</option></select></label><button id="v2-pdf" class="v2-btn">PDF Paylaş</button>';
    cal.parentElement.after(a);
    document.getElementById('v2-filter').onchange=e=>{v2.selectedPhysician=e.target.value;renderCalendar();};
    document.getElementById('v2-pdf').onclick=()=>v2Print();
@@ -43,7 +46,7 @@ function v2FilterOptions(){
 }
 function v2Details(date){
  const target=document.getElementById('v2-day-detail');if(!target)return;
- const ids=state.physicians.filter(p=>!v2.selectedPhysician||p.id===v2.selectedPhysician);
+ const ids=v2SortDay(date,state.physicians.filter(p=>!v2.selectedPhysician||p.id===v2.selectedPhysician)).map(item=>item.p);
  target.innerHTML='<strong>'+v2Esc(date)+' · Günlük görevler</strong>'+
  ids.map(p=>'<div class="v2-detail-row"><span class="v2-pill" style="background:'+v2Esc(p.color)+'">'+v2Esc(p.code)+'</span><span>'+v2Esc(p.name)+'</span><b>'+v2Esc(v2Role(date,p.id))+'</b></div>').join('')+
  '<button class="v2-btn" id="v2-edit-day">Görevleri düzenle</button>';
@@ -58,7 +61,7 @@ renderCalendar=function(){
    const d=Number(cell.querySelector('.day-number')?.textContent);if(!d)return;
    const date=toDateStr(y,m,d);
    const holder=cell.querySelector('.day-badges');if(!holder)return;
-   const persons=state.physicians.filter(p=>!v2.selectedPhysician||p.id===v2.selectedPhysician);
+   const persons=v2SortDay(date,state.physicians.filter(p=>!v2.selectedPhysician||p.id===v2.selectedPhysician)).map(item=>item.p);
    const hol=isHoliday(date),isWeekend=v2Dow(date)>5;
    const status=hol.isHoliday?'<span class="holiday-tag">'+v2Esc(hol.label)+'</span>':isWeekend?'<span class="weekend-closed-text">Kapalı</span>':'';
    holder.innerHTML=status+persons.map(p=>{
@@ -76,7 +79,7 @@ openDailySheet=function(date){v2OldOpen(date);v2RenderRoles(date);};
 function v2RenderRoles(date){
  const node=document.getElementById('v2-role-editor');if(!node)return;
  node.innerHTML='<h4>Günlük görev dağılımı</h4><p class="v2-muted">Primer, sekonder, izinli / off day veya mobil görevi seçin. Değişiklikler cihazda kaydedilir.</p>'+
- state.physicians.map(p=>'<label class="v2-role-row"><span>'+v2Esc(p.name)+'</span><select data-role-id="'+v2Esc(p.id)+'">'+V2_ROLES.map(role=>'<option '+(v2Role(date,p.id)===role?'selected':'')+'>'+v2Esc(role)+'</option>').join('')+'</select></label>').join('');
+ v2SortDay(date,state.physicians).map(({p,role})=>'<label class="v2-role-row"><span>'+v2Esc(p.name)+'</span><select data-role-id="'+v2Esc(p.id)+'">'+V2_ROLES.map(role=>'<option '+(v2Role(date,p.id)===role?'selected':'')+'>'+v2Esc(role)+'</option>').join('')+'</select></label>').join('');
  node.querySelectorAll('select').forEach(s=>s.onchange=()=>{
    const id=s.dataset.roleId,role=s.value;
    v2.roles[date] ||= {};v2.roles[date][id]=role;
@@ -84,7 +87,7 @@ function v2RenderRoles(date){
    const ids=new Set(state.assignments[date]||[]);
    active?ids.add(id):ids.delete(id);
    if(ids.size)state.assignments[date]=[...ids];else delete state.assignments[date];
-   Storage.set('assignments',state.assignments);v2Save();renderSheetPhysicians();renderCalendar();v2Details(date);
+   Storage.set('assignments',state.assignments);v2Save();renderSheetPhysicians();v2RenderRoles(date);renderCalendar();v2Details(date);
  });
 }
 const v2OldToggle=togglePhysicianAssignment;

@@ -1,15 +1,15 @@
-const CACHE_NAME = 'asm-plan-v20';
+const CACHE_NAME = 'asm-plan-v21';
 const ASSETS = [
   './',
   './index.html',
   './app.css?v=18',
   './app.js?v=18',
-  './enhancements.js?v=20',
-  './enhancements.css?v=20',
+  './enhancements.js?v=21',
+  './pdf-export.js?v=21',
+  './enhancements.css?v=21',
   './manifest.json?v=18',
   './icons/icon-192.png?v=18',
-  './icons/icon-512.png?v=18',
-  'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap'
+  './icons/icon-512.png?v=18'
 ];
 
 // Install — cache fresh assets immediately

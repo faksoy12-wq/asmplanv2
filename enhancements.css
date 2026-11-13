@@ -32,3 +32,22 @@
 .v2-template-month{display:flex;justify-content:center;align-items:center;gap:14px;margin:8px 0 16px}.v2-template-month strong{font-size:13px;min-width:125px;text-align:center}.v2-template-month .v2-btn{font-size:18px;min-width:40px;padding:5px 10px}
 @media(min-width:700px){#app-main.screen{max-width:1080px}.tab-bar{max-width:1080px;height:72px}.bottom-sheet{max-width:680px}.calendar-grid{grid-auto-rows:minmax(95px,auto)}.v2-actions{padding:16px 0}.physician-list,.template-days,.summary-list{max-width:100%}}
 @media(min-width:1000px){.calendar-grid{grid-auto-rows:minmax(120px,auto)}}
+
+/* Single, role-aware assignment editor. Hide the old duplicate tick list. */
+#sheet-physician-list{display:none!important}
+#v2-role-editor{max-height:min(57dvh,600px);overflow-y:auto;padding:10px 18px 20px;overscroll-behavior:contain}
+#v2-role-editor h4{margin:5px 0 10px;font-size:16px;color:#172a42}
+#v2-role-editor .v2-muted{line-height:1.5;margin-bottom:15px}
+#v2-role-editor .v2-role-row{min-height:57px}
+#v2-role-editor .v2-role-row:first-of-type{background:#f3fbf9;border-radius:10px;padding:8px 6px}
+#v2-role-editor select{max-width:min(53vw,230px);font-size:13px}
+.v2-pdf-overlay{position:fixed;inset:0;z-index:10020;background:rgba(12,28,44,.62);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;backdrop-filter:blur(6px)}
+.v2-pdf-dialog{max-width:420px;width:100%;box-sizing:border-box;border-radius:24px;background:#fff;padding:26px;box-shadow:0 22px 70px rgba(7,24,44,.2);display:flex;flex-direction:column;align-items:stretch;gap:12px;text-align:center;color:#172a42}
+.v2-pdf-dialog h3{font-size:22px;font-weight:800;margin:2px 0 0;letter-spacing:-.3px}
+.v2-pdf-dialog p{font-size:13px;color:#69798c;line-height:1.5;margin:2px 0 10px}
+.v2-pdf-mark{border-radius:14px;background:#e3f6f0;color:#0a8069;font-size:15px;letter-spacing:.1em;font-weight:800;align-self:center;padding:13px 20px}
+.v2-pdf-dialog .v2-btn{width:100%;display:flex;align-items:center;justify-content:center;min-height:46px;box-sizing:border-box;text-decoration:none;font-size:14px;border-radius:12px;cursor:pointer}
+.v2-pdf-dialog .v2-primary{background:#0f806c;color:#fff;border-color:#0f806c}
+.v2-pdf-dialog .v2-secondary{background:#f2f6fa;color:#253a51;border-color:#e2eaf1}
+.v2-pdf-close{font-size:13px;color:#6d7c90;background:none;border:none;padding:9px;cursor:pointer}
+@media(min-width:700px){#v2-role-editor{padding:16px 26px 24px}#v2-role-editor .v2-role-row{min-height:62px}}
