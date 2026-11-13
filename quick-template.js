@@ -148,6 +148,7 @@
       node.querySelector('#qtpl-add-physician').onclick=()=>document.querySelector('[data-tab="physicians"]')?.click();
       return;
     }
+    const scrollLeft=node.scrollLeft,scrollTop=node.scrollTop;
     node.innerHTML=docs().map(p=>{
       const active=p.id===selected?.id;
       const count=monthPlan().filter(day=>day.ids.includes(p.id)).length;
@@ -156,6 +157,7 @@
       '<span class="qtpl-person-label"><strong>'+v2Esc(p.name)+'</strong><small>'+count+' gün seçili</small></span>'+
       (active?'<span class="qtpl-person-check" aria-hidden="true">✓</span>':'')+'</button>';
     }).join('');
+    node.scrollLeft=scrollLeft;node.scrollTop=scrollTop;
   }
   function dayCell(date,d,offset){
     const ids=dateIds(date);
@@ -239,7 +241,7 @@
         '<div class="qtpl-side-heading"><strong>Hekimi seç</strong><span>Ardından takvimde günlere dokun</span></div>'+
         '<div class="qtpl-physicians" id="qtpl-physicians"></div>'+
         '<div class="qtpl-quick-actions"><button type="button" id="qtpl-fill">Hafta içlerini seç</button>'+
-          '<button type="button" id="qtpl-clear">Bu hekimi temizle</button>'+
+          '<button type="button" id="qtpl-clear">Gün seçimlerini temizle</button>'+
           '<button type="button" id="qtpl-undo" hidden>↶ Geri al</button></div>'+
         '<p class="qtpl-help"><b>M</b> işareti, hekimin kayıtlı mobil gününü gösterir. Şablonda sadece gün seçersin; Primer, Sekonder ve izin detaylarını ana takvimde düzenlersin.</p>'+
       '</aside>'+
