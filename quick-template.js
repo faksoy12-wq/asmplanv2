@@ -5,10 +5,16 @@
   'use strict';
   const quick = {
     selectedId: null,
+    selectedRole: Storage.get('quickTemplateCurrentRole', 'Primer'),
+    roles: Storage.get('quickTemplateRoles', {}),
     days: Storage.get('quickTemplateDays', {}),
     mobileExcluded: Storage.get('quickTemplateMobileExcluded', {}),
     undo: null
   };
+  const ROLES=[{name:'Primer',short:'P',color:'#0D9077'},{name:'Sekonder',short:'S',color:'#326AD1'},{name:'Mobil görev',short:'M',color:'#C4892C'},{name:'İzinli / Off day',short:'OFF',color:'#8158A9'}];
+  const ROLE_ORDER={'Primer':0,'Sekonder':1,'Mobil görev':2,'Görevli':3,'İzinli / Off day':4};
+  const roleLabel = role => ROLES.find(r=>r.name===role)?.short||(role==='Görevli'?'G':'');
+  const allowedRole = role => ROLES.some(r=>r.name===role);
   const keyMonth = () => state.currentYear+'-'+String(state.currentMonth).padStart(2,'0');
   const inMonth = date => date.startsWith(keyMonth()+'-');
   const clone = value => JSON.parse(JSON.stringify(value));
@@ -22,41 +28,58 @@
   function save() {
     Storage.set('quickTemplateDays',quick.days);
     Storage.set('quickTemplateMobileExcluded',quick.mobileExcluded);
+    Storage.set('quickTemplateRoles',quick.roles);
   }
   function captureUndo() {
-    quick.undo={days:clone(quick.days),excluded:clone(quick.mobileExcluded)};
+    quick.undo={days:clone(quick.days),excluded:clone(quick.mobileExcluded),roles:clone(quick.roles)};
   }
   function undoChange(){
     if(!quick.undo)return;
     quick.days=quick.undo.days;
     quick.mobileExcluded=quick.undo.excluded;
+    quick.roles=quick.undo.roles;
     quick.undo=null;
-    save();updateAll();showToast('Şablon seçimi geri alındı');
+    save();updateAll();showToast('Son değişiklik geri alındı');
+  }
+  // Existing v22 untyped selections remain "Görevli" until the physician's
+  // role is explicitly chosen. A saved role overrides auto mobile defaults.
+  function dateRoles(date){
+    const roles={};
+    validIds(quick.days[date]).forEach(id=>{roles[id]='Görevli';});
+    const excluded=validIds(quick.mobileExcluded[date]);
+    docs().forEach(p=>{
+      if(isAutomatic(date,p.id)&&!excluded.includes(p.id))roles[p.id]='Mobil görev';
+    });
+    Object.entries(quick.roles[date]||{}).forEach(([id,role])=>{
+      if(hasPhysician(id)&&(allowedRole(role)||role==='Görevli'))roles[id]=role;
+    });
+    return roles;
   }
   function dateIds(date){
-    const chosen=validIds(quick.days[date]);
-    const excluded=quick.mobileExcluded[date]||[];
-    const automatic=docs().filter(p=>isAutomatic(date,p.id)&&!excluded.includes(p.id)).map(p=>p.id);
-    return validIds([...chosen,...automatic]);
+    return validIds(Object.keys(dateRoles(date)));
   }
-  function toggleDate(date,id){
-    if(!hasPhysician(id)||!inMonth(date))return false;
-    captureUndo();
-    const active=dateIds(date).includes(id);
-    const selected=validIds(quick.days[date]);
-    const ignored=validIds(quick.mobileExcluded[date]);
-    const auto=isAutomatic(date,id);
-    if(active){
-      quick.days[date]=selected.filter(x=>x!==id);
-      if(auto)quick.mobileExcluded[date]=validIds([...ignored,id]);
-    }else{
-      quick.mobileExcluded[date]=ignored.filter(x=>x!==id);
-      if(!auto)quick.days[date]=validIds([...selected,id]);
-    }
-    if(!quick.days[date]?.length)delete quick.days[date];
-    if(!quick.mobileExcluded[date]?.length)delete quick.mobileExcluded[date];
-    save();
+  function setRole(date,id,role){
+    if(!hasPhysician(id)||!inMonth(date)||(role!==null&&!allowedRole(role)))return false;
+    const current=dateRoles(date)[id]||null;
+    if(current===role)return false;
+    const legacy=validIds(quick.days[date]).filter(p=>p!==id);
+    if(legacy.length)quick.days[date]=legacy;else delete quick.days[date];
+    const explicit={...(quick.roles[date]||{})};
+    delete explicit[id];
+    if(role)explicit[id]=role;
+    if(Object.keys(explicit).length)quick.roles[date]=explicit;else delete quick.roles[date];
+    const ignored=validIds(quick.mobileExcluded[date]).filter(p=>p!==id);
+    // Unselecting a recurring mobile day must not re-add it immediately.
+    if(role===null&&isAutomatic(date,id))ignored.push(id);
+    if(ignored.length)quick.mobileExcluded[date]=ignored;else delete quick.mobileExcluded[date];
     return true;
+  }
+  function toggleDate(date,id,role=quick.selectedRole){
+    if(!hasPhysician(id)||!inMonth(date)||!allowedRole(role))return false;
+    captureUndo();
+    const active=dateRoles(date)[id]||null;
+    if(!setRole(date,id,active===role?null:role))return false;
+    save();return true;
   }
   function bulk(mode,id){
     if(!hasPhysician(id))return;
@@ -65,20 +88,8 @@
     for(let d=1;d<=daysInMonth(state.currentYear,state.currentMonth);d++){
       const date=toDateStr(state.currentYear,state.currentMonth,d);
       if(mode==='fill'&&!workDay(date))continue;
-      const active=dateIds(date).includes(id),desired=mode==='fill';
-      if(active===desired)continue;
-      const selected=validIds(quick.days[date]),ignored=validIds(quick.mobileExcluded[date]);
-      const auto=isAutomatic(date,id);
-      if(desired){
-        quick.mobileExcluded[date]=ignored.filter(x=>x!==id);
-        if(!auto)quick.days[date]=validIds([...selected,id]);
-      }else{
-        quick.days[date]=selected.filter(x=>x!==id);
-        if(auto)quick.mobileExcluded[date]=validIds([...ignored,id]);
-      }
-      if(!quick.days[date]?.length)delete quick.days[date];
-      if(!quick.mobileExcluded[date]?.length)delete quick.mobileExcluded[date];
-      changes++;
+      const role=mode==='fill'?quick.selectedRole:null;
+      if(setRole(date,id,role))changes++;
     }
     save();updateAll();
     showToast(changes?changes+' gün güncellendi':'Değişiklik yok');
@@ -87,51 +98,66 @@
     const result=[];
     for(let d=1;d<=daysInMonth(state.currentYear,state.currentMonth);d++){
       const date=toDateStr(state.currentYear,state.currentMonth,d);
-      const ids=dateIds(date);
-      if(ids.length)result.push({date,ids});
+      const roles=dateRoles(date),allIds=validIds(Object.keys(roles));
+      if(!allIds.length)continue;
+      const ids=allIds.filter(id=>roles[id]!=='İzinli / Off day');
+      result.push({date,ids,roles});
     }
     return result;
   }
+  function liveRoles(date){
+    const roles={};
+    const ids=validIds(state.assignments[date]);
+    ids.forEach(id=>{roles[id]=v2Role(date,id);});
+    Object.entries(v2.roles[date]||{}).forEach(([id,role])=>{
+      if(hasPhysician(id)&&role!=='Görev yok')roles[id]=role;
+    });
+    return roles;
+  }
   function applyPlan(){
     const plan=monthPlan();
-    if(!plan.length){showToast('Önce şablonda hekim ve gün seçin');return {updated:0,skipped:0};}
+    if(!plan.length){showToast('Önce şablonda hekim, görev ve gün seçin');return {updated:0,skipped:0};}
     const same=(a,b)=>a.length===b.length&&a.every(id=>b.includes(id));
-    const conflicts=plan.filter(({date,ids})=>{
+    const conflicts=plan.filter(({date,ids,roles})=>{
       const previous=validIds(state.assignments[date]);
       const hasEdit=Object.prototype.hasOwnProperty.call(state.assignments,date)||
         Object.keys(v2.roles[date]||{}).length>0;
-      return hasEdit&&!same(ids,previous);
+      if(!hasEdit)return false;
+      const live=liveRoles(date);
+      const wanted={};
+      Object.entries(roles).forEach(([id,role])=>{
+        wanted[id]=role==='Görevli'&&live[id]&&live[id]!=='Görev yok'?live[id]:role;
+      });
+      return !same(ids,previous)||
+        Object.keys(live).length!==Object.keys(wanted).length||
+        Object.entries(wanted).some(([id,role])=>live[id]!==role);
     });
     let overwrite=false;
     if(conflicts.length){
-      overwrite=confirm(conflicts.length+' günün mevcut planı farklı. Bu günleri yeni şablonla değiştirmek ister misiniz?\n\nTamam: Seçilen günleri güncelle.\nİptal: Mevcut günleri koru, yalnızca boş günleri yükle.');
+      overwrite=confirm(conflicts.length+' günde mevcut görevlerle şablon farklı. Günleri şablona göre güncellemek ister misiniz?\n\nTamam: Değiştir.\nİptal: Mevcut günleri koru ve yalnızca boş günleri yükle.');
     }
+    const conflicting=new Set(conflicts.map(item=>item.date));
     let updated=0,skipped=0;
-    for(const {date,ids} of plan){
-      const oldIds=validIds(state.assignments[date]);
-      const hasEdit=Object.prototype.hasOwnProperty.call(state.assignments,date)||
+    for(const {date,ids,roles} of plan){
+      const exists=Object.prototype.hasOwnProperty.call(state.assignments,date)||
         Object.keys(v2.roles[date]||{}).length>0;
-      if(hasEdit&&same(ids,oldIds)){skipped++;continue;}
-      if(hasEdit&&!overwrite){skipped++;continue;}
-      const prior=v2.roles[date]||{},newRoles={};
-      ids.forEach(id=>{
-        const preserved=oldIds.includes(id)?prior[id]:null;
-        // Existing explicit daily roles survive; new selections are intentionally
-        // generic so the ASM manager can assign Primer, Sekonder and Off day later.
-        newRoles[id]=preserved&&preserved!=='Görev yok'&&preserved!=='İzinli / Off day'
-          ?preserved:(isAutomatic(date,id)?'Mobil görev':'Görevli');
+      if(exists&&(!conflicting.has(date)||!overwrite)){skipped++;continue;}
+      const live=liveRoles(date);
+      const wanted={};
+      Object.entries(roles).forEach(([id,role])=>{
+        wanted[id]=role==='Görevli'&&live[id]&&live[id]!=='Görev yok'?live[id]:role;
       });
-      state.assignments[date]=[...ids];
-      v2.roles[date]=newRoles;
+      if(ids.length)state.assignments[date]=[...ids];
+      else delete state.assignments[date];
+      v2.roles[date]=wanted;
       updated++;
     }
     if(updated){
       Storage.set('assignments',state.assignments);
-      v2Save();
-      renderCalendar();
-      showToast(updated+' gün takvime yüklendi · Günlere dokunarak görevleri düzenle');
+      v2Save();renderCalendar();
+      showToast(updated+' gün ve görevleri takvime yüklendi');
     }else{
-      showToast('Yeni gün yüklenmedi; mevcut kayıtlar korundu');
+      showToast('Mevcut takvim korundu; değişiklik yok');
     }
     return {updated,skipped,conflicts:conflicts.length,overwritten:overwrite};
   }
