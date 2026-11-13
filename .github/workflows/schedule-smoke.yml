@@ -1,0 +1,16 @@
+name: ASMPlan PWA schedule regression
+on:
+  push:
+    branches: [feature/asmplan-gorevli-takvim, main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  schedule-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Run schedule logic tests (Node.js)
+        run: node --test tests/schedule-smoke.cjs
