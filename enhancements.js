@@ -13,7 +13,7 @@ const v2WeekKey = (date,dow) => date.slice(0,7)+'-'+v2Week(date)+'-'+dow;
 const v2Role = (date,id) => v2.roles[date]?.[id] || ((state.assignments[date]||[]).includes(id)?'Görevli':'Görev yok');
 const v2Mobile = (date,id) => (v2.mobile[id]||[]).includes(v2Dow(date));
 const v2Color = id => state.physicians.find(p=>p.id===id)?.color || '#64748b';
-const V2_ROLE_RANK={'Primer':0,'Sekonder':1,'Mobil görev':2,'Görevli':3,'İzinli / Off day':4,'Görev yok':5};
+const V2_ROLE_RANK={'Primer':0,'Sekonder':1,'Mobil görev':2,'Görevli':3,'Görev yok':4,'İzinli / Off day':5};
 const v2SortDay=(date,physicians)=>physicians.map((p,index)=>({p,role:v2Role(date,p.id),index}))
  .sort((a,b)=>(V2_ROLE_RANK[a.role]??9)-(V2_ROLE_RANK[b.role]??9)||a.index-b.index);
 function v2Save(){ Storage.set('dailyRoles',v2.roles);Storage.set('mobileDays',v2.mobile);Storage.set('weeklyOverrides',v2.weekly); }
