@@ -871,7 +871,7 @@ function renderAll() {
 // ================= SERVICE WORKER REGISTRATION & AUTO-UPDATE =================
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=21')
+    navigator.serviceWorker.register('./sw.js?v=22')
       .then((reg) => {
         reg.update();
         console.log('PWA Service Worker registered:', reg.scope);

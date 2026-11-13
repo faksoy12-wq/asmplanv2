@@ -1,0 +1,102 @@
+/* ASMPlan V2 · Quick monthly planning: compact phone calendar, physician sidebar on tablet. */
+#v2-week-editor{display:none!important}
+#tab-template .tab-desc{margin-bottom:10px}
+#template-days.qtpl-host{display:block!important;padding:0!important;margin:0!important;min-height:0}
+.qtpl-workspace{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start;width:100%;min-width:0;padding-bottom:calc(95px + var(--safe-bottom,0px))}
+.qtpl-main,.qtpl-sidebar{background:#fff;border:1px solid #e3eaf1;border-radius:19px;min-width:0;box-shadow:0 5px 20px rgba(21,43,69,.035)}
+.qtpl-main{padding:11px 9px 15px;min-width:0}
+.qtpl-month-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 3px 14px}
+.qtpl-month-btn{appearance:none;border:1px solid #dce8ed;background:#f6f9fb;color:#16384c;border-radius:12px;width:38px;height:40px;flex-shrink:0;font-size:25px;font-weight:500;display:grid;place-items:center;line-height:1;cursor:pointer}
+.qtpl-month-title{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;min-width:0}
+.qtpl-month-title strong{font-size:17px;color:#132a3f;font-weight:800;letter-spacing:-.4px}
+.qtpl-month-title span{font-size:10px;color:#8a98a9;letter-spacing:.025em}
+.qtpl-weekdays,.qtpl-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;width:100%;min-width:0}
+.qtpl-weekdays{margin-bottom:6px;border-bottom:1px solid #edf2f6;padding-bottom:7px}
+.qtpl-weekdays span{text-align:center;color:#75859a;font-size:11px;font-weight:750}
+.qtpl-weekdays span.qtpl-weekend{color:#b7bec7}
+.qtpl-grid{grid-auto-rows:minmax(76px,auto)}
+.qtpl-placeholder{border-radius:10px;background:linear-gradient(145deg,#fafcfd,#f7f9fb)}
+.qtpl-day{position:relative;appearance:none;min-width:0;min-height:76px;display:flex;flex-direction:column;align-items:stretch;text-align:left;justify-content:flex-start;gap:2px;padding:6px 4px 4px;background:#f8fafc;border:1.5px solid #e4ecf3;border-radius:10px;cursor:pointer;touch-action:manipulation;transition:border-color .13s,background .13s,transform .11s;overflow:hidden;color:#25364c}
+.qtpl-day:active{transform:scale(.96)}
+.qtpl-day.has-current{border-color:#0e9481;background:#e9f8f3;box-shadow:inset 0 0 0 .6px #0e9481}
+.qtpl-day.is-weekend{background:#f2f4f7;color:#aab5c2}
+.qtpl-day.is-holiday{background:#fff2f2;border-color:#ffdbdb}
+.qtpl-day.is-holiday.has-current{border-color:#0e9481;background:#e9f8f3}
+.qtpl-day-head{display:flex;align-items:center;justify-content:space-between;gap:2px;min-height:16px}
+.qtpl-day-head b{font-size:11px;line-height:1.2}
+.qtpl-tick{color:#0e8b77;font-size:12px;font-weight:800}
+.qtpl-day-chips{display:flex;flex-direction:column;align-items:flex-start;gap:3px;overflow:hidden;width:100%}
+.qtpl-day-chip{display:flex;align-items:center;justify-content:space-between;gap:2px;border-radius:4px;width:auto;max-width:100%;box-sizing:border-box;padding:2px 3px;color:#fff;font-size:9px;font-weight:750;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qtpl-day-chip.is-selected{box-shadow:0 0 0 1px rgba(255,255,255,.85),0 0 0 2px rgba(14,148,129,.4)}
+.qtpl-mobile-letter{flex-shrink:0;font-size:8px;font-weight:850;background:rgba(255,255,255,.23);padding:0px 2px;border-radius:2px}
+.qtpl-more{font-size:10px;color:#687e92;font-weight:750;margin:0 3px}
+.qtpl-closed-label{position:absolute;bottom:4px;right:4px;font-size:8px;color:#9aa6b4;font-weight:650}
+.qtpl-day.is-holiday .qtpl-closed-label{color:#d16a65}
+.qtpl-stats{font-size:11px;color:#708396;text-align:center;min-height:17px;padding:12px 2px 4px}
+.qtpl-bottom-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:9px}
+.qtpl-bottom-actions button{appearance:none;border-radius:12px;padding:11px 12px;font-size:12px;font-weight:750;min-height:40px;cursor:pointer}
+.qtpl-submit{background:#0b806e;color:#fff;border:1px solid #0b806e;flex:1 1 175px}
+.qtpl-back{background:#f4f7f9;color:#436072;border:1px solid #e1e9ef;flex:0 1 140px}
+.qtpl-sidebar{padding:13px 12px 14px;display:flex;flex-direction:column;gap:11px}
+.qtpl-side-heading{display:flex;flex-direction:column;gap:4px}
+.qtpl-side-heading strong{font-size:14px;color:#16364b;font-weight:800}
+.qtpl-side-heading span{font-size:11px;color:#8495a7;line-height:1.35}
+.qtpl-physicians{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:3px 2px 7px}
+.qtpl-physicians::-webkit-scrollbar{display:none}
+.qtpl-person{appearance:none;min-width:148px;max-width:235px;flex:1 0 148px;text-align:left;display:flex;align-items:center;gap:7px;background:#f8fafc;border:1.5px solid #e4ebf2;border-radius:12px;padding:9px 8px;color:#253b50;cursor:pointer}
+.qtpl-person.is-active{background:#eaf8f3;border-color:#0d9488;box-shadow:0 0 0 1px rgba(13,148,136,.12)}
+.qtpl-person-mark{width:32px;height:32px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;border-radius:10px;font-size:11px;font-weight:800}
+.qtpl-person-label{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.qtpl-person-label strong{font-size:11px;font-weight:750;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.qtpl-person-label small{font-size:10px;color:#7d8b9c;white-space:nowrap}
+.qtpl-person-check{color:#0f8e7b;font-size:16px;font-weight:800;flex-shrink:0}
+.qtpl-quick-actions{display:flex;gap:7px;flex-wrap:wrap}
+.qtpl-quick-actions button{appearance:none;border:1px solid #dbe9eb;color:#245a5a;background:#eff8f6;border-radius:10px;padding:9px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex:1 0 auto}
+.qtpl-quick-actions #qtpl-clear{background:#f6f8fa;color:#64748b;border-color:#e4eaf0}
+.qtpl-quick-actions #qtpl-undo{color:#3b66a8;background:#edf4ff;border-color:#d9e7fb}
+.qtpl-quick-actions #qtpl-undo[hidden]{display:none}
+.qtpl-help{font-size:11px;line-height:1.55;color:#8998a8;margin:0;padding:10px;background:#f7fafb;border-radius:10px}
+.qtpl-help b{color:#986919}
+.qtpl-no-doctors{color:#65758a;font-size:12px;line-height:1.5}
+.qtpl-no-doctors button{display:inline;border:none;background:none;color:#0d9488;font-weight:800;text-decoration:underline;cursor:pointer}
+@media(max-width:699px){
+ .qtpl-sidebar{order:-1;padding:12px 10px 11px}
+ .qtpl-side-heading{flex-direction:row;justify-content:space-between;align-items:baseline;gap:7px;flex-wrap:wrap}
+ .qtpl-side-heading span{font-size:10px}
+ .qtpl-help{padding:8px}
+ .qtpl-quick-actions{gap:5px}
+ .qtpl-quick-actions button{padding:8px 8px}
+}
+@media(min-width:700px){
+ .qtpl-workspace{grid-template-columns:minmax(0,1fr) 248px;gap:16px;padding-bottom:25px}
+ .qtpl-main{padding:18px}
+ .qtpl-sidebar{position:sticky;top:15px;padding:17px}
+ .qtpl-physicians{flex-direction:column;overflow:visible;padding:0;gap:8px}
+ .qtpl-person{max-width:none;min-width:0;flex:initial;width:100%}
+ .qtpl-quick-actions{flex-direction:column}
+ .qtpl-quick-actions button{flex:initial;width:100%;min-height:36px}
+ .qtpl-day{min-height:101px;padding:9px 8px}
+ .qtpl-grid{grid-auto-rows:minmax(101px,auto);gap:7px}
+ .qtpl-weekdays{gap:7px}
+ .qtpl-day-head b{font-size:15px}
+ .qtpl-day-chip{font-size:11px;padding:3px 6px}
+ .qtpl-month-title strong{font-size:21px}
+ .qtpl-month-btn{width:43px;height:43px}
+ .qtpl-stats{font-size:13px}
+ .qtpl-bottom-actions button{min-height:44px}
+}
+@media(min-width:1000px){
+ .qtpl-workspace{grid-template-columns:minmax(0,1fr) 268px;gap:20px}
+ .qtpl-grid{grid-auto-rows:minmax(110px,auto)}
+ .qtpl-day{min-height:110px}
+ .qtpl-main{padding:22px}
+ .qtpl-sidebar{padding:20px}
+}
+@media(max-width:375px){
+ .qtpl-grid,.qtpl-weekdays{gap:3px}
+ .qtpl-day{min-height:72px;padding:5px 3px 4px;border-radius:8px}
+ .qtpl-grid{grid-auto-rows:minmax(72px,auto)}
+ .qtpl-day-chip{font-size:8px;padding:2px}
+ .qtpl-mobile-letter{font-size:7px}
+ .qtpl-person{min-width:136px;flex-basis:136px}
+}
